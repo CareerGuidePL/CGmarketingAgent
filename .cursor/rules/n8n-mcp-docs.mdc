@@ -1,0 +1,32 @@
+---
+description: n8n — dokumentacja przez MCP Context7; kiedy odpytywać
+alwaysApply: true
+---
+
+# n8n — źródło wiedzy (MCP)
+
+**Gdy temat dotyczy n8n** (workflow, węzły, wyrażenia, API, self-host, community nodes) **albo** pracujesz nad plikami typu workflow JSON / diagramy automatyzacji w tym projekcie:
+
+## 1. MCP `user-context7` (priorytet)
+
+**Zanim** podasz szczegóły techniczne (nazwy pól węzłów, `type` / `typeVersion`, API, migracje):
+
+1. Wywołaj **`resolve-library-id`** z `libraryName`: `n8n` i `query` dopasowanym do zadania.
+2. Wywołaj **`query-docs`** z uzyskanym `libraryId` i konkretnym `query` (np. nazwa węzła, „HTTP Request v4 parameters”, „credentials OAuth2”).
+
+**Preferowane ID bibliotek** (wybierz najlepiej pasujące; typowe pytania o integracje i węzły: zacznij od pierwszego wiersza):
+
+| Priorytet | Library ID | Kiedy |
+|-----------|------------|--------|
+| 1 | `/websites/n8n_io` | Ogólne docs z docs.n8n.io, integracje, przewodniki |
+| 2 | `/n8n-io/n8n-docs` | Struktura repo docs, core/trigger/app nodes, odniesienia do plików |
+| 3 | `/llmstxt/n8n_io_llms-full_txt` | Bardzo szerokie zapytanie lub brak wyniku w 1–2 |
+
+Nie ufaj wyłącznie pamięci treningowej dla wersji węzłów i nazw pól — **potwierdź w query-docs**, jeśli to możliwe.
+
+## 2. Uzupełnienie
+
+- Oficjalna strona: [https://docs.n8n.io](https://docs.n8n.io) — biblioteki węzłów: *Built-in* → App / Trigger / Core / Cluster nodes.
+- Limit wywołań Context7: nie marnuj zapytań; łącz powiązane pytania w jedno `query-docs` gdy sensowne.
+
+Sekcja 1 dotyczy tylko sytuacji opisanych powyżej — nie wywołuj Context7 przy każdej wiadomości bez kontekstu n8n.
