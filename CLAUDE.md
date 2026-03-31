@@ -2,6 +2,8 @@
 
 Projekt automatyzacji marketingowej oparty na n8n workflows.
 
+Roadmap (fazy, iteracje, koszt): `docs/roadmap.md`.
+
 ## Zasady projektu
 
 Wszystkie IDE (Cursor, Claude Code, Windsurf) muszą stosować te same zasady.

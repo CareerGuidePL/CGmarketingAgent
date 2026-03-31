@@ -7,6 +7,7 @@
 ## 1. Architektura
 
 - Projekt automatyzacji marketingowej oparty na n8n workflows
+- Roadmap (fazy, iteracje, koszt, kontrakt `job`): `docs/roadmap.md`
 - Diagramy architektury: `docs/agent.excalidraw`
 - Konfiguracja MCP n8n dostepna we wszystkich IDE (patrz sekcja MCP ponizej)
 
@@ -90,6 +91,7 @@ Gdy zmienisz zasady w jednym IDE:
 CLAUDE.md                     # Reguly Claude Code
 docs/
   shared-rules.md             # ZRODLO PRAWDY — wspolne zasady
+  roadmap.md                  # Roadmap projektu (fazy, iteracje)
   windsurf-mcp-setup.md       # Instrukcja MCP dla Windsurf
   agent.excalidraw            # Diagram architektury
 .env.example                  # Szablon zmiennych srodowiskowych
