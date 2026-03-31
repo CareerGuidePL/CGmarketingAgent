@@ -24,9 +24,33 @@ alwaysApply: true
 
 Nie ufaj wyłącznie pamięci treningowej dla wersji węzłów i nazw pól — **potwierdź w query-docs**, jeśli to możliwe.
 
-## 2. Uzupełnienie
+## 2. MCP projektu: `n8n-mcp` (`.cursor/mcp.json`)
+
+W tym repozytorium jest serwer **`n8n-mcp`** (pakiet [npm `n8n-mcp`](https://www.npmjs.com/package/n8n-mcp)) — węzły, właściwości, szablony; opcjonalnie zarządzanie instancją przez API.
+
+- **Bez danych instancji** (domyślnie): działa tryb dokumentacji / narzędzi bez `N8N_API_*`.
+- **Gdy użytkownik poda URL instancji i klucz API n8n:** dopisz w `env` serwera `n8n-mcp` w `.cursor/mcp.json`:
+  - `N8N_API_URL` — np. `https://twoja-instancja.tld` (bez końcowego slasha, zgodnie z dokumentacją n8n-mcp)
+  - `N8N_API_KEY` — klucz z *Settings → API* w n8n
+
+Nie commituj kluczy; jeśli trzeba trzymać je poza repo, ustaw te same zmienne w środowisku systemu albo skopiuj konfigurację do globalnego MCP w Cursorze.
+
+### Opcja: oficjalny endpoint MCP instancji n8n (`/mcp-server/http`)
+
+Jeśli włączysz [MCP w instancji n8n](https://docs.n8n.io/advanced-ai/accessing-n8n-mcp-server) i dostaniesz URL + token, możesz dodać **drugi** serwer MCP (obok `n8n-mcp`), np. przez `npx supergateway` z `--streamableHttp` na `https://<domena>/mcp-server/http` i nagłówkiem `Authorization: Bearer <token>` — wzór jest w dokumentacji n8n (sekcja Claude Desktop / Codex); struktura jak w `mcpServers` Cursora.
+
+## 3. Uzupełnienie (Context7)
 
 - Oficjalna strona: [https://docs.n8n.io](https://docs.n8n.io) — biblioteki węzłów: *Built-in* → App / Trigger / Core / Cluster nodes.
 - Limit wywołań Context7: nie marnuj zapytań; łącz powiązane pytania w jedno `query-docs` gdy sensowne.
 
 Sekcja 1 dotyczy tylko sytuacji opisanych powyżej — nie wywołuj Context7 przy każdej wiadomości bez kontekstu n8n.
+
+## 4. Wspólne zasady projektu
+
+Stosuj **zawsze** zasady z `docs/shared-rules.md` — to źródło prawdy dla wszystkich IDE (Cursor, Claude Code, Windsurf).
+
+Przed każdym `git push`:
+1. Sprawdź spójność zmian (`git diff --stat`)
+2. Zsynchronizuj reguły IDE jeśli zmieniły się wspólne zasady
+3. Upewnij się że `.env` / klucze API nie są w staged files
