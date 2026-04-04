@@ -46,7 +46,11 @@ Jeśli włączysz [MCP w instancji n8n](https://docs.n8n.io/advanced-ai/accessin
 
 Sekcja 1 dotyczy tylko sytuacji opisanych powyżej — nie wywołuj Context7 przy każdej wiadomości bez kontekstu n8n.
 
-## 4. Wspólne zasady projektu
+## 4. Wybór węzłów w workflowach
+
+Przy projektowaniu i edycji workflowów: **preferuj natywne** węzły n8n; **Code** i **HTTP Request** gdy nie ma odpowiedniego węzła albo integracja natywna nie wystarcza. Pełna zasada: `docs/shared-rules.md` → sekcja 1 (Architektura).
+
+## 5. Wspólne zasady projektu
 
 Stosuj **zawsze** zasady z `docs/shared-rules.md` — to źródło prawdy dla wszystkich IDE (Cursor, Claude Code, Windsurf).
 

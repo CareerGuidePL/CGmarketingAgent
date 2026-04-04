@@ -9,6 +9,8 @@ Roadmap (fazy, iteracje, koszt): `docs/roadmap.md`.
 Wszystkie IDE (Cursor, Claude Code, Windsurf) muszą stosować te same zasady.
 Wspólne reguły znajdują się w `docs/shared-rules.md` — **zawsze** stosuj je jako źródło prawdy.
 
+Projektowanie workflowów: **najpierw natywne węzły n8n**, dopiero potem Code / HTTP Request — pełna zasada w `docs/shared-rules.md` (sekcja 1 Architektura).
+
 @docs/shared-rules.md
 
 ## MCP: n8n

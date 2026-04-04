@@ -28,6 +28,10 @@ Instrukcja: `docs/windsurf-mcp-setup.md`
 - Z N8N_API_URL + N8N_API_KEY: zarzadzanie instancja.
 - Nie commituj kluczy API.
 
-## 3. Wspolne zasady projektu
+## 3. Wybor wezlow w workflowach
+
+Preferuj natywne wezly n8n; Code i HTTP Request gdy nie ma odpowiedniego wezla albo integracja natywna nie wystarcza. Pelna zasada: `docs/shared-rules.md` — sekcja 1 (Architektura).
+
+## 4. Wspolne zasady projektu
 
 Stosuj zawsze zasady z `docs/shared-rules.md` — to zrodlo prawdy dla wszystkich IDE.
