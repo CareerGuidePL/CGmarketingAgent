@@ -16,7 +16,7 @@
 - Dokumentacja projektu: polski
 - Kod i komentarze w kodzie: angielski
 - Nazwy plikow: kebab-case
-- Commit messages: angielski, zwiezle, zaczynaj od czasownika (add, fix, update, remove)
+- Wiadomosci commitow i nazwy branchy: patrz **sekcja 8** (Git)
 
 ## 3. MCP: n8n
 
@@ -97,3 +97,49 @@ docs/
 .env.example                  # Szablon zmiennych srodowiskowych
 .gitignore                    # Ignorowane pliki
 ```
+
+## 8. Git: branchy i commity
+
+Zasady spojne z dobrymi praktykami: **jeden branch = jedna spojna funkcjonalnosc** (albo jeden logiczny fix/refactor), **inicjaly osoby odpowiedzialnej** widoczne w nazwie brancha i w pierwszej linii commita.
+
+### 8.1 Nazewnictwo branchy
+
+Format:
+
+`<typ>/<inicjaly>-<krotki-opis-kebab-case>`
+
+- **typ** — zakres zmian (Conventional Commits):
+  - `feat` — nowa funkcjonalnosc
+  - `fix` — naprawa bledu
+  - `docs` — tylko dokumentacja
+  - `chore` — narzedzia, konfiguracja, zaleznosci bez zmiany logiki biznesowej
+  - `refactor` — przebudowa kodu bez zmiany zachowania
+  - `test` — testy
+- **inicjaly** — 2–4 litery **male** (np. `ms`, `ab`), ta sama osoba co w commitach na tym branchu
+- **opis** — jedno zdanie w kebab-case; konkretny, bez ogolnikow
+
+Przyklady: `feat/ms-add-telegram-webhook`, `fix/ab-n8n-credential-timeout`, `docs/ms-roadmap-phase-2`.
+
+Zasady:
+
+- Nie lacz na jednym branchu niepowiazanych tematow (np. nowy workflow + poprawka README w tym samym PR — rozdziel).
+- Bazuj na aktualnym `main` (lub ustalonej galezi deweloperskiej); przed merge zdejmij konflikty lokalnie.
+- Nie commituj na `main` bezposrednio — praca na branchu + merge (PR lub lokalny merge po review zespolu).
+
+### 8.2 Wiadomosci commitow
+
+- Jezyk: **angielski**, forma rozkazujaca (np. `add`, `fix`, `update`, `remove`).
+- Pierwsza linia (subject): **`[inicjaly] typ: krotki opis`** — `inicjaly` te same co w nazwie brancha (male litery w nawiasach kwadratowych).
+- `typ` jak w sekcji 8.1 (feat, fix, docs, chore, refactor, test).
+- Maks. ok. 72 znaki w pierwszej linii; opcjonalnie druga linia pusta, potem body z uzasadnieniem / linkiem do zadania.
+
+Przyklady:
+
+- `[ms] feat: add Slack notification on workflow error`
+- `[ab] fix: handle empty payload in webhook trigger`
+
+Wiele commitow na jednym branchu: kazdy commit powinien byc **atomowy** (jedna logiczna zmiana), zeby sensownie dalo sie robic `revert` i czytac historie.
+
+### 8.3 Przed push (uzupełnienie sekcji 5)
+
+- Upewnij sie, ze nazwa brancha i prefiksy `[inicjaly]` w commitach sa spojne z osoba odpowiedzialna za zmiane.

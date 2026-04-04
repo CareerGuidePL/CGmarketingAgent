@@ -45,3 +45,5 @@ Nie ufaj wyłącznie pamięci treningowej — **potwierdź w query-docs**.
 2. Upewnij się, że `docs/shared-rules.md` jest aktualny jeśli zmieniły się zasady
 3. Zsynchronizuj reguły IDE — zaktualizuj `.cursor/rules/`, `CLAUDE.md`, `.windsurf/rules/` jeśli zmieniły się wspólne zasady
 4. Sprawdź czy `.env` / klucze API nie są w staged files
+
+Nazewnictwo branchy i format commitów (inicjały, typy `feat`/`fix`/…): **sekcja 8** w `docs/shared-rules.md`.
