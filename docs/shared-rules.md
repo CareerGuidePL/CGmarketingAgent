@@ -96,6 +96,7 @@ docs/
   windsurf-mcp-setup.md       # Instrukcja MCP dla Windsurf
   agent.excalidraw            # Diagram architektury
 .env.example                  # Szablon zmiennych srodowiskowych
+docker-compose.yml            # Lokalny n8n (Docker)
 .gitignore                    # Ignorowane pliki
 ```
 
@@ -107,7 +108,7 @@ Zasady spojne z dobrymi praktykami: **jeden branch = jedna spojna funkcjonalnosc
 
 Format:
 
-`<typ>/<inicjaly>-<krotki-opis-kebab-case>`
+`<typ>/<krotki-opis-kebab-case>-<INICJALY>`
 
 - **typ** — zakres zmian (Conventional Commits):
   - `feat` — nowa funkcjonalnosc
@@ -116,10 +117,10 @@ Format:
   - `chore` — narzedzia, konfiguracja, zaleznosci bez zmiany logiki biznesowej
   - `refactor` — przebudowa kodu bez zmiany zachowania
   - `test` — testy
-- **inicjaly** — 2–4 litery **male** (np. `ms`, `ab`), ta sama osoba co w commitach na tym branchu
 - **opis** — jedno zdanie w kebab-case; konkretny, bez ogolnikow
+- **INICJALY** — na **koncu** nazwy brancha, **2–4 wielkie litery** (np. `MS`, `AB`), ta sama osoba co w commitach na tym branchu
 
-Przyklady: `feat/ms-add-telegram-webhook`, `fix/ab-n8n-credential-timeout`, `docs/ms-roadmap-phase-2`.
+Przyklady: `feat/add-telegram-webhook-MS`, `fix/n8n-credential-timeout-AB`, `docs/roadmap-phase-2-MS`.
 
 Zasady:
 
@@ -130,17 +131,17 @@ Zasady:
 ### 8.2 Wiadomosci commitow
 
 - Jezyk: **angielski**, forma rozkazujaca (np. `add`, `fix`, `update`, `remove`).
-- Pierwsza linia (subject): **`[inicjaly] typ: krotki opis`** — `inicjaly` te same co w nazwie brancha (male litery w nawiasach kwadratowych).
+- Pierwsza linia (subject): **`[INICJALY] typ: krotki opis`** — te same inicjaly co w nazwie brancha (**wielkie litery** w nawiasach kwadratowych).
 - `typ` jak w sekcji 8.1 (feat, fix, docs, chore, refactor, test).
 - Maks. ok. 72 znaki w pierwszej linii; opcjonalnie druga linia pusta, potem body z uzasadnieniem / linkiem do zadania.
 
 Przyklady:
 
-- `[ms] feat: add Slack notification on workflow error`
-- `[ab] fix: handle empty payload in webhook trigger`
+- `[MS] feat: add Slack notification on workflow error`
+- `[AB] fix: handle empty payload in webhook trigger`
 
 Wiele commitow na jednym branchu: kazdy commit powinien byc **atomowy** (jedna logiczna zmiana), zeby sensownie dalo sie robic `revert` i czytac historie.
 
 ### 8.3 Przed push (uzupełnienie sekcji 5)
 
-- Upewnij sie, ze nazwa brancha i prefiksy `[inicjaly]` w commitach sa spojne z osoba odpowiedzialna za zmiane.
+- Upewnij sie, ze nazwa brancha (inicjaly na koncu, wielkie litery) i prefiksy `[INICJALY]` w commitach sa spojne z osoba odpowiedzialna za zmiane.
