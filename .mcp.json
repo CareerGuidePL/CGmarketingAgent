@@ -6,7 +6,8 @@
       "env": {
         "MCP_MODE": "stdio",
         "LOG_LEVEL": "error",
-        "DISABLE_CONSOLE_OUTPUT": "true"
+        "DISABLE_CONSOLE_OUTPUT": "true",
+        "N8N_API_URL": "http://127.0.0.1:5679"
       }
     }
   }
