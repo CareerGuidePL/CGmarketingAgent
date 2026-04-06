@@ -3,6 +3,7 @@
 .env.local
 .env.*.local
 .mcp.json
+.cursor/mcp.json
 
 # Claude Code local settings (memory, etc.)
 .claude/

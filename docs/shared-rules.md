@@ -82,7 +82,8 @@ Gdy zmienisz zasady w jednym IDE:
 
 ```
 .cursor/
-  mcp.json                    # MCP config (Cursor)
+  mcp.json                    # MCP config (Cursor) — gitignored, skopiuj z mcp.json.example
+  mcp.json.example            # Szablon MCP config (bez sekretow)
   rules/
     n8n-mcp-docs.mdc          # Reguly Cursor
 .windsurf/
