@@ -120,7 +120,7 @@ Format:
 - **opis** — jedno zdanie w kebab-case; konkretny, bez ogolnikow
 - **INICJALY** — na **koncu** nazwy brancha, **2–4 wielkie litery** (np. `MS`, `AB`), ta sama osoba co w commitach na tym branchu
 
-Przyklady: `feat/add-telegram-webhook-MS`, `fix/n8n-credential-timeout-AB`, `docs/roadmap-phase-2-MS`.
+Przyklady: `feat/add-discord-ingest-MS`, `fix/n8n-credential-timeout-AB`, `docs/roadmap-phase-2-MS`.
 
 Zasady:
 

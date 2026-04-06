@@ -14,8 +14,7 @@ Uzupełniaj wraz z Fazą 1 ([roadmap.md](roadmap.md)). Opcjonalnie: osobny arkus
 | Obszar | Serwis | Nazwa credentiala w n8n (propozycja) | Uwagi / status |
 |--------|--------|--------------------------------------|----------------|
 | Orchestracja | n8n API | `CG n8n API — local` | `N8N_API_KEY` z Settings → API |
-| Wejścia | Telegram | | Bot token |
-| Wejścia | Slack | | OAuth / token — dev workspace |
+| Wejścia | Discord | `CG Discord Bot — dev` | Bot token; serwer TEAM CG, kanał `cg-agent` |
 | Wejścia | Mail | | IMAP/SMTP lub usługa |
 | Dane | Google Drive | | OAuth |
 | Dane | Google Sheets | | OAuth |
@@ -24,7 +23,7 @@ Uzupełniaj wraz z Fazą 1 ([roadmap.md](roadmap.md)). Opcjonalnie: osobny arkus
 | AI | (dostawca LLM) | | API key — po wyborze w [decisions-three-variants.md](decisions-three-variants.md) |
 | Obrazy / wideo | (API HTCI) | | Po wyborze |
 | Social | Meta / LinkedIn / X / … | | OAuth; osobne appy, często App Review |
-| Opcjonalnie | Discord | | Bot token |
+| Powiadomienia | Discord | `CG Discord Bot — dev` | Ten sam bot; odpowiedzi statusowe w wątkach |
 
 ## Rejestr kosztów / log decyzji
 

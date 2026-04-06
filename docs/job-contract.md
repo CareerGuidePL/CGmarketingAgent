@@ -13,7 +13,7 @@ Jednolity payload między workflowami (`Execute Workflow`, webhooki): orchestrat
   "job_id": "uuid-v4-lub-inny-stabilny-id",
   "created_at": "2026-04-04T12:00:00+02:00",
   "updated_at": "2026-04-04T12:05:00+02:00",
-  "source": "telegram",
+  "source": "discord",
   "content_type": "post",
   "channels": ["linkedin"],
   "assets": [
@@ -45,7 +45,7 @@ Jednolity payload między workflowami (`Execute Workflow`, webhooki): orchestrat
 | `job_id` | string | Identyfikator idempotentności i powiązań (Kalendarz, logi). |
 | `created_at` | string (ISO 8601) | Czas utworzenia rekordu `job`. |
 | `updated_at` | string (ISO 8601) | Ostatnia zmiana (opcjonalnie w I1). |
-| `source` | string | Skrót wejścia: `telegram`, `slack`, `mail`, … |
+| `source` | string | Skrót wejścia: `discord`, `mail`, … |
 | `content_type` | string | Np. `post`, `story`, `video_script` — doprecyzowanie w kolejnych iteracjach. |
 | `channels` | string[] | Docelowe kanały wyjścia (w I1 często jeden element). |
 | `assets` | array | Odniesienia do plików (Drive, URL); struktura wewnętrzna może się rozrosnąć. |

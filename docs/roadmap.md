@@ -19,9 +19,9 @@ Dokument zbiera ustalenia dotyczące automatyzacji marketingowej opartej na **n8
 
 ## Co wynika z diagramu (agent.excalidraw)
 
-**Wejście:** Telegram, Slack, Mail — zdjęcia, filmiki, polecenia, materiały stałe (logo, avatar).
+**Wejście:** Discord, Mail — zdjęcia, filmiki, polecenia, materiały stałe (logo, avatar).
 
-**Wyjście:** posty (Facebook, LinkedIn, X, Instagram), wideo (YouTube, TikTok, itd.), powiadomienia (Mail, Slack, Telegram), **Human in the loop**.
+**Wyjście:** posty (Facebook, LinkedIn, X, Instagram), wideo (YouTube, TikTok, itd.), powiadomienia (Mail, Discord), **Human in the loop**.
 
 **Środek:** agent z modelami, **HTCI** (szablon + logo + zdjęcia), **pamięć**, **dystrybucja** z **specyfikacją per kanał**, pętla **poprawka / wycofanie**, Scheduler, **N8N Marketing Agent**.
 
@@ -49,7 +49,7 @@ Dokument zbiera ustalenia dotyczące automatyzacji marketingowej opartej na **n8
 
 - Orchestracja: **n8n self-hosted** (bez n8n Cloud).
 - Dane: **Seatable** (free tier, 10k wierszy/bazę) jako główny magazyn `job`; **Google Drive** na assety; **Google Sheets** tylko do rejestru kosztów i raportów analitycznych.
-- Wejścia: Telegram Bot, Slack (dev workspace), mail z istniejącej skrzynki gdy możliwe.
+- Wejścia: Discord Bot (serwer TEAM CG, kanał `cg-agent`), mail z istniejącej skrzynki gdy możliwe.
 - AI: start od **tanich modeli / limitów** w workflow; lokalny LLM (Ollama) tylko gdy jakość i koszt czasu są akceptowalne.
 - HTCI: **szablony + logo + upload** zanim płatna generacja obrazu; batch i cache.
 - Social: **jeden kanał na iterację**; bez dodatkowych SaaS cross-post na start.
@@ -80,7 +80,7 @@ W iteracji najpierw wariant **darmowy** lub **niewielki koszt**; **droższy** po
 
 Zamiast realizować wszystkie fazy naraz — **krótkie iteracje**, przyrost działający, **pauza** na ocenę.
 
-1. **Cel** — jedno zdanie (np. „Telegram → arkusz + powiadomienie”).
+1. **Cel** — jedno zdanie (np. „Discord → arkusz + powiadomienie”).
 2. **Zakres** — minimum do celu; dla nowych elementów **tabela 3 wariantów**.
 3. **Implementacja** — pod-workflowy + kontrakt `job`.
 4. **Pomiar** — jakość, liczba wywołań API, czas ludzi, koszt z paneli.
@@ -91,7 +91,7 @@ Zamiast realizować wszystkie fazy naraz — **krótkie iteracje**, przyrost dzi
 | Iteracja | Zakres |
 |----------|--------|
 | **I0** | Faza 0: lokalne n8n, konwencje, `.env`; opcjonalnie tunel |
-| **I1** | Faza 2 minimalnie + jedno wejście (np. Telegram) + Sheets/Drive |
+| **I1** | Faza 2 minimalnie + jedno wejście (Discord) + Seatable/Drive |
 | **I2** | Faza 3: ingest → orchestrator stub → HITL lub tania generacja tekstu |
 | **I3** | Jeden kanał social; scheduler w wersji minimalnej (np. ręczny trigger) |
 | **I4+** | Faza 4 (agent, HTCI, pamięć), pełny scheduler, kolejne kanały, Faza 6 |
@@ -105,8 +105,7 @@ Po **I2–I3** warto **zatrzymać się** na ocenę, zanim doda się drogie model
 ```mermaid
 flowchart LR
   subgraph triggers [Wejścia]
-    TG[Telegram]
-    SL[Slack]
+    DC[Discord]
     ML[Mail]
   end
   subgraph orch [Orchestrator n8n]
@@ -129,7 +128,8 @@ flowchart LR
     SH[Google_Sheets]
     GC[Google_Calendar]
   end
-  triggers --> ING
+  DC --> ING
+  ML --> ING
   ING --> AG
   AG --> STO
   AG --> GEN
@@ -162,7 +162,7 @@ Matryca kont i integracji w **n8n Credentials** (osobno dev/prod jeśli potrzeba
 | Obszar | Serwis | Uwagi |
 |--------|--------|--------|
 | Orchestracja | n8n (self-hosted) | API Key — URL lokalny lub VPS |
-| Wejścia | Telegram, Slack, Mail | Bot/token/OAuth |
+| Wejścia | Discord, Mail | Bot token / IMAP/SMTP |
 | Dane | Drive, Sheets, Calendar, Seatable? | OAuth / token |
 | AI | Dostawca LLM | API key, limity |
 | Obrazy / wideo | API zgodnie z HTCI | API key |
@@ -179,7 +179,7 @@ Matryca kont i integracji w **n8n Credentials** (osobno dev/prod jeśli potrzeba
 
 ### Faza 3 — Pierwszy pionowy slice
 
-1. `cg-ingest-unified` — Telegram/Slack/Mail → `job` + Drive.
+1. `cg-ingest-unified` — Discord/Mail → `job` + Drive.
 2. `cg-store-assets` — logo, avatar, szablony HTCI.
 3. `cg-orchestrator-main` — routing; **jeden kanał testowy**.
 4. `cg-human-in-the-loop` — zatwierdzenia; aktualizacja statusu.
