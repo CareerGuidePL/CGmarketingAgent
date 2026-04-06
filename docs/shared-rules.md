@@ -88,7 +88,8 @@ Gdy zmienisz zasady w jednym IDE:
 .windsurf/
   rules/
     n8n-mcp-docs.md           # Reguly Windsurf
-.mcp.json                     # MCP config (Claude Code)
+.mcp.json                     # MCP config (Claude Code) — gitignored, skopiuj z .mcp.json.example
+.mcp.json.example             # Szablon MCP config (bez sekretow)
 CLAUDE.md                     # Reguly Claude Code
 docs/
   shared-rules.md             # ZRODLO PRAWDY — wspolne zasady
