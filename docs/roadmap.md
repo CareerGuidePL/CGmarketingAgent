@@ -2,7 +2,9 @@
 
 Dokument zbiera ustalenia dotyczące automatyzacji marketingowej opartej na **n8n** (self-hosted). Diagram wyjściowy: [agent.excalidraw](agent.excalidraw). Zasady projektu: [shared-rules.md](shared-rules.md).
 
-**Status:** roadmapa do akceptacji; **budowa automatyzacji** (workflowy, infrastruktura) rozpoczyna się po zamknięciu tego etapu planowania.
+**Status:** roadmapa **w użyciu** — dokument żywy (edycje mile widziane); realizacja zgodnie z checklistą i iteracjami I0+.
+
+**Powiązane pliki robocze:** [job-contract.md](job-contract.md) (kontrakt `job`), [decisions-three-variants.md](decisions-three-variants.md) (3 warianty decyzji), [credentials-registry.md](credentials-registry.md) (credential’e + koszty).
 
 ---
 
@@ -46,7 +48,7 @@ Dokument zbiera ustalenia dotyczące automatyzacji marketingowej opartej na **n8
 ## Niski koszt — zasady operacyjne
 
 - Orchestracja: **n8n self-hosted** (bez n8n Cloud).
-- Dane: domyślnie **Google Sheets + Drive** (tanio; aktualne limity); **Seatable** tylko gdy potrzeba i darmowy tier wystarcza.
+- Dane: **Seatable** (free tier, 10k wierszy/bazę) jako główny magazyn `job`; **Google Drive** na assety; **Google Sheets** tylko do rejestru kosztów i raportów analitycznych.
 - Wejścia: Telegram Bot, Slack (dev workspace), mail z istniejącej skrzynki gdy możliwe.
 - AI: start od **tanich modeli / limitów** w workflow; lokalny LLM (Ollama) tylko gdy jakość i koszt czasu są akceptowalne.
 - HTCI: **szablony + logo + upload** zanim płatna generacja obrazu; batch i cache.
@@ -172,7 +174,7 @@ Matryca kont i integracji w **n8n Credentials** (osobno dev/prod jeśli potrzeba
 ### Faza 2 — Kontrakt `job`
 
 - Pola np.: `job_id`, `created_at`, `source`, `content_type`, `channels[]`, `assets`, `channel_specs`, `approval_status`, `publish_at`.
-- Źródło prawdy: **Sheets + Drive** (start) lub **Seatable** (gdy potrzebne relacje/SQL).
+- Źródło prawdy: **Seatable** (relacje, widoki, REST API); Drive na assety binarne.
 - Kalendarz: sloty powiązane z `job_id`.
 
 ### Faza 3 — Pierwszy pionowy slice
@@ -216,7 +218,7 @@ Numer **8** odzwierciedla kolejność logiczną: **dopiero po domknięciu funkcj
 ## Ryzyka i decyzje
 
 - **Meta/IG/FB:** rezerwa czasu na **App Review**; osobne kroki (Business Manager, typ konta IG).
-- **Seatable vs Sheets+Drive:** jedna decyzja wpływa na raporty i workflowy — kosztowo często najpierw Sheets+Drive.
+- **Seatable vs Sheets+Drive:** zdecydowano — Seatable jako główny magazyn `job`; Sheets zostaje tylko do kosztów/raportów.
 - **Discord, Blog SEO, statystyki:** świadomie na później.
 - **Lokalnie vs VPS:** przez większość projektu **lokalny n8n + tunel**; **Faza 8** (migracja na VPS) **dopiero przy domykaniu systemu** — wtedy jednorazowa zmiana redirect URI / webhooków na produkcyjny host (mniej ryzyka niż przenoszenie się na VPS w połowie rozwoju).
 - **API LLM/obrazy:** quoty w workflow; bez limitów rośnie rachunek.
@@ -226,10 +228,10 @@ Numer **8** odzwierciedla kolejność logiczną: **dopiero po domknięciu funkcj
 ## Checklist przed budową (po akceptacji roadmapy)
 
 - [ ] Zatwierdzona treść `docs/roadmap.md` (ew. dopiski w `docs/agent.excalidraw`).
-- [ ] Trzy warianty dla: hostingu webhooków, magazynu `job`, pierwszego modelu AI (zapis).
-- [ ] Kontrakt JSON `job` (szkic w `docs/` lub w repo workflowów).
-- [ ] Lista credentiali (nazwy w n8n, bez wartości) + rejestr kosztów / log decyzji (np. Sheets).
-- [ ] Uruchomienie lokalnego n8n (Faza 0) — pierwszy techniczny krok implementacji.
+- [x] Trzy warianty dla: hostingu webhooków, magazynu `job`, pierwszego modelu AI — szablon: [decisions-three-variants.md](decisions-three-variants.md) (uzupełnij decyzje w treści).
+- [x] Kontrakt JSON `job` — szkic: [job-contract.md](job-contract.md).
+- [x] Lista credentiali — [credentials-registry.md](credentials-registry.md); rejestr kosztów: uzupełnij link do arkusza w tym pliku.
+- [ ] Uruchomienie lokalnego n8n (Faza 0 / **I0**) — `docker compose up -d` (komentarz w [docker-compose.yml](../docker-compose.yml), zmienne w [.env.example](../.env.example)); backup volume `n8n_data`.
 
 ---
 
@@ -240,3 +242,4 @@ Numer **8** odzwierciedla kolejność logiczną: **dopiero po domknięciu funkcj
 | 1.0 | Konsolidacja ustaleń: n8n self-hosted, lokalnie → VPS, niski koszt, 3 warianty, iteracje, przepływ agenta treści, fazy 0–7 |
 | 1.1 | Migracja VPS przesunięta: dopiero gdy system blisko ukończenia; rozwój na lokalnym n8n + tunel |
 | 1.2 | Renumeracja: migracja VPS z „Faza 0b” na **Faza 8** (logicznie na końcu, po 1–7) |
+| 1.3 | Start pracy z roadmapą: szkic `job`, szablon 3 wariantów, rejestr credentiali; status „w użyciu” |

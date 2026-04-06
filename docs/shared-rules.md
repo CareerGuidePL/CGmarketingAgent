@@ -7,7 +7,7 @@
 ## 1. Architektura
 
 - Projekt automatyzacji marketingowej oparty na n8n workflows
-- Roadmap (fazy, iteracje, koszt, kontrakt `job`): `docs/roadmap.md`
+- Roadmap (fazy, iteracje, koszt, kontrakt `job`): `docs/roadmap.md`; szkic kontraktu `job`: `docs/job-contract.md`
 - Diagramy architektury: `docs/agent.excalidraw`
 - Konfiguracja MCP n8n dostepna we wszystkich IDE (patrz sekcja MCP ponizej)
 - **Węzły w workflowach:** w pierwszej kolejności używaj **natywnych** węzłów n8n (built-in / app nodes dla danej usługi lub operacji). Węzły **Code** lub **HTTP Request** stosuj dopiero gdy odpowiedniego natywnego węzła nie ma albo nie spełnia on wymagań (np. brak operacji w integracji, nietypowy kontrakt API).
