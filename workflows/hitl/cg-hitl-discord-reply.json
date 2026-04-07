@@ -1,0 +1,749 @@
+{
+  "updatedAt": "2026-04-06T21:01:39.787Z",
+  "createdAt": "2026-04-06T19:24:52.477Z",
+  "id": "QV6IEXUG6GY9DM3l",
+  "name": "cg-hitl-discord-reply",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "list",
+        "tableName": "jobs",
+        "viewName": "approved-pending",
+        "options": {
+          "simple": false
+        }
+      },
+      "id": "get-approved",
+      "name": "Get Approved Jobs",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -96
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "list",
+        "tableName": "jobs",
+        "viewName": "reject-pending",
+        "options": {
+          "simple": false
+        }
+      },
+      "id": "get-rejected",
+      "name": "Get Rejected Jobs",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        224,
+        112
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ingested",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "id": "4c10790f-d10b-4364-b663-4f4360b95041"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-approved-new",
+      "name": "Filter Approved Not Notified",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "combinator": "and"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ingested",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "filter-rejected-new",
+      "name": "Filter Rejected Not Notified",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        448,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1452941431802040332",
+          "mode": "list",
+          "cachedResultName": "Career Guide",
+          "cachedResultUrl": "https://discord.com/channels/1452941431802040332"
+        },
+        "channelId": {
+          "mode": "id",
+          "value": "1490792473440813199"
+        },
+        "content": "=✅ **Zatwierdzono job** `{{ $json.job_id }}`\n\n{{ $json.raw_text }}",
+        "options": {}
+      },
+      "id": "send-approved",
+      "name": "Discord: Approved",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -96
+      ],
+      "webhookId": "f60b8124-6ef9-4c1d-8285-9591325c8e94",
+      "credentials": {
+        "discordBotApi": {
+          "id": "b4truRzbrjj3C93v",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1452941431802040332",
+          "mode": "list",
+          "cachedResultName": "Career Guide",
+          "cachedResultUrl": "https://discord.com/channels/1452941431802040332"
+        },
+        "channelId": {
+          "mode": "id",
+          "value": "1490792473440813199"
+        },
+        "content": "=❌ **Odrzucono job** `{{ $json.job_id }}`\n\n{{ $json.raw_text }}",
+        "options": {}
+      },
+      "id": "send-rejected",
+      "name": "Discord: Rejected",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        672,
+        112
+      ],
+      "webhookId": "f0ee42dd-c1fc-45b3-8a6f-fcb43f3fa264",
+      "credentials": {
+        "discordBotApi": {
+          "id": "b4truRzbrjj3C93v",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableName": "jobs",
+        "rowId": "={{ $('Get Approved Jobs').first().json._id }}",
+        "columnsUi": {
+          "columnValues": [
+            {
+              "columnName": "status",
+              "columnValue": "approved_notified"
+            }
+          ]
+        }
+      },
+      "id": "update-approved",
+      "name": "Update Status: approved",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -96
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableName": "jobs",
+        "rowId": "={{ $('Get Rejected Jobs').first().json._id }}",
+        "columnsUi": {
+          "columnValues": [
+            {
+              "columnName": "status",
+              "columnValue": "rejected_notified"
+            }
+          ]
+        }
+      },
+      "id": "update-rejected",
+      "name": "Update Status: rejected",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        880,
+        112
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Approved Jobs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Rejected Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Approved Jobs": {
+      "main": [
+        [
+          {
+            "node": "Filter Approved Not Notified",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Rejected Jobs": {
+      "main": [
+        [
+          {
+            "node": "Filter Rejected Not Notified",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Approved Not Notified": {
+      "main": [
+        [
+          {
+            "node": "Discord: Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Rejected Not Notified": {
+      "main": [
+        [
+          {
+            "node": "Discord: Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord: Approved": {
+      "main": [
+        [
+          {
+            "node": "Update Status: approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord: Rejected": {
+      "main": [
+        [
+          {
+            "node": "Update Status: rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Warsaw",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "0ce538fd-5910-41ba-8285-134f9f065b0b",
+  "activeVersionId": "0ce538fd-5910-41ba-8285-134f9f065b0b",
+  "versionCounter": 75,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-06T19:24:52.480Z",
+      "createdAt": "2026-04-06T19:24:52.480Z",
+      "role": "workflow:owner",
+      "workflowId": "QV6IEXUG6GY9DM3l",
+      "projectId": "PXHJPWu3tFvLsdCG",
+      "project": {
+        "updatedAt": "2026-04-06T12:34:09.192Z",
+        "createdAt": "2026-04-06T08:30:03.839Z",
+        "id": "PXHJPWu3tFvLsdCG",
+        "name": "Career Guide <admin@careerguide.pl>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-06T21:03:32.000Z",
+    "createdAt": "2026-04-06T21:01:39.788Z",
+    "versionId": "0ce538fd-5910-41ba-8285-134f9f065b0b",
+    "workflowId": "QV6IEXUG6GY9DM3l",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 2
+              }
+            ]
+          }
+        },
+        "id": "schedule-trigger",
+        "name": "Schedule Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "list",
+          "tableName": "jobs",
+          "viewName": "approved-pending",
+          "options": {
+            "simple": false
+          }
+        },
+        "id": "get-approved",
+        "name": "Get Approved Jobs",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          224,
+          -96
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "list",
+          "tableName": "jobs",
+          "viewName": "reject-pending",
+          "options": {
+            "simple": false
+          }
+        },
+        "id": "get-rejected",
+        "name": "Get Rejected Jobs",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          224,
+          112
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.status }}",
+                "rightValue": "ingested",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                },
+                "id": "4c10790f-d10b-4364-b663-4f4360b95041"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "filter-approved-new",
+        "name": "Filter Approved Not Notified",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          448,
+          -96
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "combinator": "and"
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.status }}",
+                "rightValue": "ingested",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "filter-rejected-new",
+        "name": "Filter Rejected Not Notified",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          448,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "__rl": true,
+            "value": "1452941431802040332",
+            "mode": "list",
+            "cachedResultName": "Career Guide",
+            "cachedResultUrl": "https://discord.com/channels/1452941431802040332"
+          },
+          "channelId": {
+            "mode": "id",
+            "value": "1490792473440813199"
+          },
+          "content": "=✅ **Zatwierdzono job** `{{ $json.job_id }}`\n\n{{ $json.raw_text }}",
+          "options": {}
+        },
+        "id": "send-approved",
+        "name": "Discord: Approved",
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          672,
+          -96
+        ],
+        "webhookId": "f60b8124-6ef9-4c1d-8285-9591325c8e94",
+        "credentials": {
+          "discordBotApi": {
+            "id": "b4truRzbrjj3C93v",
+            "name": "Discord Bot account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "__rl": true,
+            "value": "1452941431802040332",
+            "mode": "list",
+            "cachedResultName": "Career Guide",
+            "cachedResultUrl": "https://discord.com/channels/1452941431802040332"
+          },
+          "channelId": {
+            "mode": "id",
+            "value": "1490792473440813199"
+          },
+          "content": "=❌ **Odrzucono job** `{{ $json.job_id }}`\n\n{{ $json.raw_text }}",
+          "options": {}
+        },
+        "id": "send-rejected",
+        "name": "Discord: Rejected",
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          672,
+          112
+        ],
+        "webhookId": "f0ee42dd-c1fc-45b3-8a6f-fcb43f3fa264",
+        "credentials": {
+          "discordBotApi": {
+            "id": "b4truRzbrjj3C93v",
+            "name": "Discord Bot account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "tableName": "jobs",
+          "rowId": "={{ $('Get Approved Jobs').first().json._id }}",
+          "columnsUi": {
+            "columnValues": [
+              {
+                "columnName": "status",
+                "columnValue": "approved_notified"
+              }
+            ]
+          }
+        },
+        "id": "update-approved",
+        "name": "Update Status: approved",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          880,
+          -96
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "tableName": "jobs",
+          "rowId": "={{ $('Get Rejected Jobs').first().json._id }}",
+          "columnsUi": {
+            "columnValues": [
+              {
+                "columnName": "status",
+                "columnValue": "rejected_notified"
+              }
+            ]
+          }
+        },
+        "id": "update-rejected",
+        "name": "Update Status: rejected",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          880,
+          112
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Get Approved Jobs",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Get Rejected Jobs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Approved Jobs": {
+        "main": [
+          [
+            {
+              "node": "Filter Approved Not Notified",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Rejected Jobs": {
+        "main": [
+          [
+            {
+              "node": "Filter Rejected Not Notified",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter Approved Not Notified": {
+        "main": [
+          [
+            {
+              "node": "Discord: Approved",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter Rejected Not Notified": {
+        "main": [
+          [
+            {
+              "node": "Discord: Rejected",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Discord: Approved": {
+        "main": [
+          [
+            {
+              "node": "Update Status: approved",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Discord: Rejected": {
+        "main": [
+          [
+            {
+              "node": "Update Status: rejected",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Career Guide",
+    "name": "Version 0ce538fd",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-06T21:03:32.621Z",
+        "id": 5,
+        "workflowId": "QV6IEXUG6GY9DM3l",
+        "versionId": "0ce538fd-5910-41ba-8285-134f9f065b0b",
+        "event": "activated",
+        "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      }
+    ]
+  }
+}

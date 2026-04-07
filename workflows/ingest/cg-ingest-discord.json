@@ -1,0 +1,559 @@
+{
+  "updatedAt": "2026-04-06T20:43:59.958Z",
+  "createdAt": "2026-04-06T16:54:48.448Z",
+  "id": "MvyZHtercUEd3cVb",
+  "name": "cg-ingest-discord",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "tableName": "config",
+        "searchColumn": "key",
+        "searchTerm": "discord_last_message_id",
+        "options": {}
+      },
+      "id": "get-config",
+      "name": "Get Last Message ID",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll",
+        "guildId": {
+          "mode": "id",
+          "value": "1452941431802040332"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1490792473440813199",
+          "mode": "id"
+        },
+        "limit": 50,
+        "options": {}
+      },
+      "id": "discord-get-many",
+      "name": "Discord Get Messages",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "webhookId": "5b0213d5-fabe-41ba-86c7-d26121044a22",
+      "credentials": {
+        "discordBotApi": {
+          "id": "b4truRzbrjj3C93v",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get last processed message ID from SeaTable config\nconst configItems = $('Get Last Message ID').all();\nconst lastId = configItems.length > 0 ? configItems[0].json.value : '0';\n\n// Get Discord messages\nconst messages = $('Discord Get Messages').all();\n\n// Filter: only messages after lastId, exclude bots\nconst newMessages = messages.filter(msg => {\n  const msgId = msg.json.id;\n  const isBot = msg.json.author?.bot === true;\n  return BigInt(msgId) > BigInt(lastId) && !isBot;\n});\n\nif (newMessages.length === 0) {\n  return [];\n}\n\n// Sort oldest first\nnewMessages.sort((a, b) => {\n  return Number(BigInt(a.json.id) - BigInt(b.json.id));\n});\n\n// Generate UUID v4\nfunction uuid() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {\n    const r = Math.random() * 16 | 0;\n    const v = c === 'x' ? r : (r & 0x3 | 0x8);\n    return v.toString(16);\n  });\n}\n\nreturn newMessages.map(msg => ({\n  json: {\n    job_id: uuid(),\n    discord_msg_id: msg.json.id,\n    source: 'discord',\n    content_type: 'post',\n    raw_text: msg.json.content || '',\n    author: msg.json.author?.username || 'unknown',\n    assets: JSON.stringify(\n      (msg.json.attachments || []).map(a => ({\n        kind: a.content_type?.startsWith('image') ? 'image' : 'file',\n        url: a.url,\n        filename: a.filename\n      }))\n    ),\n    approval_status: 'pending',\n    status: 'ingested',\n    created_at: msg.json.timestamp\n  }\n}));"
+      },
+      "id": "filter-new",
+      "name": "Filter New Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableName": "jobs",
+        "columnsUi": {
+          "columnValues": [
+            {
+              "columnName": "job_id",
+              "columnValue": "={{ $json.job_id }}"
+            },
+            {
+              "columnName": "discord_msg_id",
+              "columnValue": "={{ $json.discord_msg_id }}"
+            },
+            {
+              "columnName": "source",
+              "columnValue": "={{ $json.source }}"
+            },
+            {
+              "columnName": "content_type",
+              "columnValue": "={{ $json.content_type }}"
+            },
+            {
+              "columnName": "raw_text",
+              "columnValue": "={{ $json.raw_text }}"
+            },
+            {
+              "columnName": "author",
+              "columnValue": "={{ $json.author }}"
+            },
+            {
+              "columnName": "assets",
+              "columnValue": "={{ $json.assets }}"
+            },
+            {
+              "columnName": "approval_status",
+              "columnValue": "={{ $json.approval_status }}"
+            },
+            {
+              "columnName": "status",
+              "columnValue": "={{ $json.status }}"
+            }
+          ]
+        }
+      },
+      "id": "create-job",
+      "name": "SeaTable Create Job",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableName": "config",
+        "rowId": "={{ $('Get Last Message ID').first().json._id }}",
+        "columnsUi": {
+          "columnValues": [
+            {
+              "columnName": "value",
+              "columnValue": "={{ $('Filter New Messages').last().json.discord_msg_id }}"
+            }
+          ]
+        }
+      },
+      "id": "update-config",
+      "name": "Update Last Message ID",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        0
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Last Message ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Last Message ID": {
+      "main": [
+        [
+          {
+            "node": "Discord Get Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord Get Messages": {
+      "main": [
+        [
+          {
+            "node": "Filter New Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter New Messages": {
+      "main": [
+        [
+          {
+            "node": "SeaTable Create Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SeaTable Create Job": {
+      "main": [
+        [
+          {
+            "node": "Update Last Message ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Warsaw",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "d5f5507b-7bb5-4381-bb44-b05f17d6c3ce",
+  "activeVersionId": "d5f5507b-7bb5-4381-bb44-b05f17d6c3ce",
+  "versionCounter": 15,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-06T16:54:48.451Z",
+      "createdAt": "2026-04-06T16:54:48.451Z",
+      "role": "workflow:owner",
+      "workflowId": "MvyZHtercUEd3cVb",
+      "projectId": "PXHJPWu3tFvLsdCG",
+      "project": {
+        "updatedAt": "2026-04-06T12:34:09.192Z",
+        "createdAt": "2026-04-06T08:30:03.839Z",
+        "id": "PXHJPWu3tFvLsdCG",
+        "name": "Career Guide <admin@careerguide.pl>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-06T21:03:56.000Z",
+    "createdAt": "2026-04-06T20:43:59.960Z",
+    "versionId": "d5f5507b-7bb5-4381-bb44-b05f17d6c3ce",
+    "workflowId": "MvyZHtercUEd3cVb",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes"
+              }
+            ]
+          }
+        },
+        "id": "schedule-trigger",
+        "name": "Schedule Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "search",
+          "tableName": "config",
+          "searchColumn": "key",
+          "searchTerm": "discord_last_message_id",
+          "options": {}
+        },
+        "id": "get-config",
+        "name": "Get Last Message ID",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          224,
+          0
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "operation": "getAll",
+          "guildId": {
+            "mode": "id",
+            "value": "1452941431802040332"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "1490792473440813199",
+            "mode": "id"
+          },
+          "limit": 50,
+          "options": {}
+        },
+        "id": "discord-get-many",
+        "name": "Discord Get Messages",
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "webhookId": "5b0213d5-fabe-41ba-86c7-d26121044a22",
+        "credentials": {
+          "discordBotApi": {
+            "id": "b4truRzbrjj3C93v",
+            "name": "Discord Bot account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get last processed message ID from SeaTable config\nconst configItems = $('Get Last Message ID').all();\nconst lastId = configItems.length > 0 ? configItems[0].json.value : '0';\n\n// Get Discord messages\nconst messages = $('Discord Get Messages').all();\n\n// Filter: only messages after lastId, exclude bots\nconst newMessages = messages.filter(msg => {\n  const msgId = msg.json.id;\n  const isBot = msg.json.author?.bot === true;\n  return BigInt(msgId) > BigInt(lastId) && !isBot;\n});\n\nif (newMessages.length === 0) {\n  return [];\n}\n\n// Sort oldest first\nnewMessages.sort((a, b) => {\n  return Number(BigInt(a.json.id) - BigInt(b.json.id));\n});\n\n// Generate UUID v4\nfunction uuid() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {\n    const r = Math.random() * 16 | 0;\n    const v = c === 'x' ? r : (r & 0x3 | 0x8);\n    return v.toString(16);\n  });\n}\n\nreturn newMessages.map(msg => ({\n  json: {\n    job_id: uuid(),\n    discord_msg_id: msg.json.id,\n    source: 'discord',\n    content_type: 'post',\n    raw_text: msg.json.content || '',\n    author: msg.json.author?.username || 'unknown',\n    assets: JSON.stringify(\n      (msg.json.attachments || []).map(a => ({\n        kind: a.content_type?.startsWith('image') ? 'image' : 'file',\n        url: a.url,\n        filename: a.filename\n      }))\n    ),\n    approval_status: 'pending',\n    status: 'ingested',\n    created_at: msg.json.timestamp\n  }\n}));"
+        },
+        "id": "filter-new",
+        "name": "Filter New Messages",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "resource": "row",
+          "operation": "create",
+          "tableName": "jobs",
+          "columnsUi": {
+            "columnValues": [
+              {
+                "columnName": "job_id",
+                "columnValue": "={{ $json.job_id }}"
+              },
+              {
+                "columnName": "discord_msg_id",
+                "columnValue": "={{ $json.discord_msg_id }}"
+              },
+              {
+                "columnName": "source",
+                "columnValue": "={{ $json.source }}"
+              },
+              {
+                "columnName": "content_type",
+                "columnValue": "={{ $json.content_type }}"
+              },
+              {
+                "columnName": "raw_text",
+                "columnValue": "={{ $json.raw_text }}"
+              },
+              {
+                "columnName": "author",
+                "columnValue": "={{ $json.author }}"
+              },
+              {
+                "columnName": "assets",
+                "columnValue": "={{ $json.assets }}"
+              },
+              {
+                "columnName": "approval_status",
+                "columnValue": "={{ $json.approval_status }}"
+              },
+              {
+                "columnName": "status",
+                "columnValue": "={{ $json.status }}"
+              }
+            ]
+          }
+        },
+        "id": "create-job",
+        "name": "SeaTable Create Job",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          880,
+          0
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "tableName": "config",
+          "rowId": "={{ $('Get Last Message ID').first().json._id }}",
+          "columnsUi": {
+            "columnValues": [
+              {
+                "columnName": "value",
+                "columnValue": "={{ $('Filter New Messages').last().json.discord_msg_id }}"
+              }
+            ]
+          }
+        },
+        "id": "update-config",
+        "name": "Update Last Message ID",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          1104,
+          0
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Get Last Message ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Last Message ID": {
+        "main": [
+          [
+            {
+              "node": "Discord Get Messages",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Discord Get Messages": {
+        "main": [
+          [
+            {
+              "node": "Filter New Messages",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter New Messages": {
+        "main": [
+          [
+            {
+              "node": "SeaTable Create Job",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SeaTable Create Job": {
+        "main": [
+          [
+            {
+              "node": "Update Last Message ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Career Guide",
+    "name": "Version d5f5507b",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-06T20:46:57.397Z",
+        "id": 1,
+        "workflowId": "MvyZHtercUEd3cVb",
+        "versionId": "d5f5507b-7bb5-4381-bb44-b05f17d6c3ce",
+        "event": "activated",
+        "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      },
+      {
+        "createdAt": "2026-04-06T21:03:56.099Z",
+        "id": 6,
+        "workflowId": "MvyZHtercUEd3cVb",
+        "versionId": "d5f5507b-7bb5-4381-bb44-b05f17d6c3ce",
+        "event": "activated",
+        "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      },
+      {
+        "createdAt": "2026-04-06T21:00:49.555Z",
+        "id": 4,
+        "workflowId": "MvyZHtercUEd3cVb",
+        "versionId": "d5f5507b-7bb5-4381-bb44-b05f17d6c3ce",
+        "event": "deactivated",
+        "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      }
+    ]
+  }
+}

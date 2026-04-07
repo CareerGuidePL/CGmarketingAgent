@@ -36,117 +36,77 @@ resolve_dir() {
 echo "Fetching workflow list from $API_URL ..."
 response=$(curl -sf -H "X-N8N-API-KEY: $API_KEY" "$API_URL/api/v1/workflows?limit=250")
 
-# Parse with python (available on most systems)
-echo "$response" | python3 -c "
-import json, sys, subprocess, os, re
+# Parse and export with node (cross-platform)
+export N8N_EXPORT_API_URL="$API_URL"
+export N8N_EXPORT_API_KEY="$API_KEY"
+export N8N_EXPORT_WORKFLOWS_DIR="$WORKFLOWS_DIR"
 
-data = json.load(sys.stdin)
-workflows = data.get('data', data) if isinstance(data, dict) else data
+echo "$response" | node -e "
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
-api_url = '$API_URL'
-api_key = '$API_KEY'
-workflows_dir = '$WORKFLOWS_DIR'
-count = 0
+const apiUrl = process.env.N8N_EXPORT_API_URL;
+const apiKey = process.env.N8N_EXPORT_API_KEY;
+const workflowsDir = path.resolve(process.env.N8N_EXPORT_WORKFLOWS_DIR);
 
-for wf in workflows:
-    wf_id = wf['id']
-    wf_name = wf.get('name', f'workflow-{wf_id}')
+function resolveDir(name) {
+  const n = name.toLowerCase();
+  if (n.includes('ingest')) return 'ingest';
+  if (n.includes('orchestrat')) return 'orchestrator';
+  if (n.includes('hitl') || n.includes('human')) return 'hitl';
+  if (n.includes('gen') && (n.includes('content') || n.includes('prompt'))) return 'generate';
+  if (n.includes('distribut')) return 'distribute';
+  if (n.includes('store') || n.includes('asset')) return 'store';
+  if (n.includes('memory')) return 'memory';
+  if (n.includes('schedul')) return 'scheduler';
+  if (n.includes('analyt')) return 'analytics';
+  return '.';
+}
 
-    # Fetch full workflow
-    import urllib.request
-    req = urllib.request.Request(
-        f'{api_url}/api/v1/workflows/{wf_id}',
-        headers={'X-N8N-API-KEY': api_key}
-    )
-    with urllib.request.urlopen(req) as resp:
-        full_wf = json.loads(resp.read())
+function fetchWorkflow(id) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(apiUrl + '/api/v1/workflows/' + id);
+    const mod = url.protocol === 'https:' ? https : http;
+    mod.get(url, { headers: { 'X-N8N-API-KEY': apiKey } }, res => {
+      let body = '';
+      res.on('data', d => body += d);
+      res.on('end', () => resolve(JSON.parse(body)));
+    }).on('error', reject);
+  });
+}
 
-    # Remove credential values (keep references only)
-    for node in full_wf.get('nodes', []):
-        if 'credentials' in node:
-            for cred_type, cred_data in node['credentials'].items():
-                if isinstance(cred_data, dict):
-                    # Keep only id and name, remove any sensitive fields
-                    node['credentials'][cred_type] = {
-                        k: v for k, v in cred_data.items()
-                        if k in ('id', 'name')
-                    }
+(async () => {
+  let input = '';
+  for await (const chunk of process.stdin) input += chunk;
+  const data = JSON.parse(input);
+  const workflows = data.data || data;
+  let count = 0;
 
-    # Determine subdirectory
-    slug = re.sub(r'[^a-z0-9]+', '-', wf_name.lower()).strip('-')
-" 2>/dev/null || python -c "
-import json, sys, re, os
-try:
-    from urllib.request import Request, urlopen
-except ImportError:
-    from urllib2 import Request, urlopen
-
-data = json.load(sys.stdin)
-workflows = data.get('data', data) if isinstance(data, dict) else data
-
-api_url = '$API_URL'
-api_key = '$API_KEY'
-workflows_dir = '$WORKFLOWS_DIR'
-count = 0
-
-for wf in workflows:
-    wf_id = str(wf['id'])
-    wf_name = wf.get('name', 'workflow-' + wf_id)
-
-    req = Request(
-        api_url + '/api/v1/workflows/' + wf_id,
-        headers={'X-N8N-API-KEY': api_key}
-    )
-    resp = urlopen(req)
-    full_wf = json.loads(resp.read())
-
-    # Strip credential secrets
-    for node in full_wf.get('nodes', []):
-        if 'credentials' in node:
-            for cred_type in list(node['credentials'].keys()):
-                cred_data = node['credentials'][cred_type]
-                if isinstance(cred_data, dict):
-                    node['credentials'][cred_type] = {
-                        k: v for k, v in cred_data.items()
-                        if k in ('id', 'name')
-                    }
-
-    slug = re.sub(r'[^a-z0-9]+', '-', wf_name.lower()).strip('-')
-
-    # Resolve directory
-    name_lower = wf_name.lower()
-    if 'ingest' in name_lower:
-        subdir = 'ingest'
-    elif 'orchestrat' in name_lower:
-        subdir = 'orchestrator'
-    elif 'hitl' in name_lower or 'human' in name_lower:
-        subdir = 'hitl'
-    elif 'gen' in name_lower and ('content' in name_lower or 'prompt' in name_lower):
-        subdir = 'generate'
-    elif 'distribut' in name_lower:
-        subdir = 'distribute'
-    elif 'store' in name_lower or 'asset' in name_lower:
-        subdir = 'store'
-    elif 'memory' in name_lower:
-        subdir = 'memory'
-    elif 'schedul' in name_lower:
-        subdir = 'scheduler'
-    elif 'analyt' in name_lower:
-        subdir = 'analytics'
-    else:
-        subdir = '.'
-
-    out_dir = os.path.join(workflows_dir, subdir)
-    os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, slug + '.json')
-
-    with open(out_path, 'w', encoding='utf-8') as f:
-        json.dump(full_wf, f, indent=2, ensure_ascii=False)
-
-    count += 1
-    print('  exported: ' + subdir + '/' + slug + '.json')
-
-print(str(count) + ' workflow(s) exported.')
-" <<< "$response"
+  for (const wf of workflows) {
+    const full = await fetchWorkflow(wf.id);
+    // Strip credential secrets
+    for (const node of (full.nodes || [])) {
+      if (node.credentials) {
+        for (const [type, cred] of Object.entries(node.credentials)) {
+          if (typeof cred === 'object' && cred !== null) {
+            node.credentials[type] = { id: cred.id, name: cred.name };
+          }
+        }
+      }
+    }
+    const slug = wf.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const subdir = resolveDir(wf.name);
+    const outDir = path.join(workflowsDir, subdir);
+    fs.mkdirSync(outDir, { recursive: true });
+    const outPath = path.join(outDir, slug + '.json');
+    fs.writeFileSync(outPath, JSON.stringify(full, null, 2), 'utf-8');
+    count++;
+    console.log('  exported: ' + subdir + '/' + slug + '.json');
+  }
+  console.log(count + ' workflow(s) exported.');
+})();
+"
 
 echo "Done."

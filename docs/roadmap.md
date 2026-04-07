@@ -234,7 +234,7 @@ Numer **8** odzwierciedla kolejność logiczną: **dopiero po domknięciu funkcj
 - [x] Uruchomienie lokalnego n8n (Faza 0 / **I0**) — `docker compose up -d`; działa na porcie 5679.
 - [x] Onboarding — [onboarding-local-setup.md](onboarding-local-setup.md).
 - [x] Wersjonowanie workflow — struktura `workflows/`, skrypty eksport/import ([shared-rules.md](shared-rules.md) § 9).
-- [ ] Eksport istniejących workflow z n8n do repo (Discord ingest, HITL reply) — wymaga `N8N_API_KEY`.
+- [x] Eksport istniejących workflow z n8n do repo (Discord ingest, HITL reply) — wymaga `N8N_API_KEY`.
 - [ ] Zaktualizować `job-contract.md` — uwagi implementacyjne wciąż odwołują się do Google Sheets zamiast Seatable; dodać opis struktury tabel Seatable.
 - [ ] Opisać istniejącą bazę Seatable (tabele, kolumny, relacje) jeśli została już utworzona.
 
