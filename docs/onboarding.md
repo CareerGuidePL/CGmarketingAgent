@@ -4,9 +4,11 @@ Krok po kroku dla nowego dewelopera. Czas: ~30 min.
 
 ## 1. Sklonuj repo i skopiuj szablony
 
+> Po sklonowaniu Git tworzy katalog o nazwie repozytorium (domyślnie `CGmarketingAgent`). Jeśli klonujesz do innej ścieżki (`git clone … mój-folder`), użyj `cd` do tego folderu.
+
 ```bash
-git clone <repo-url>
-cd CG-agent
+git clone https://github.com/CareerGuidePL/CGmarketingAgent.git
+cd CGmarketingAgent
 cp .env.example .env
 cp .mcp.json.example .mcp.json
 cp .cursor/mcp.json.example .cursor/mcp.json

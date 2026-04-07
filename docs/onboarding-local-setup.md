@@ -9,9 +9,11 @@ Instrukcja dla każdej osoby z zespołu, która chce uruchomić lokalną instanc
 ## 1. Sklonuj repozytorium
 
 ```bash
-git clone https://github.com/<org>/CG-agent.git
-cd CG-agent
+git clone https://github.com/CareerGuidePL/CGmarketingAgent.git
+cd CGmarketingAgent
 ```
+
+> Katalog po klonowaniu ma domyślnie nazwę repozytorium (`CGmarketingAgent`). Przy `git clone … inna-nazwa` wykonaj `cd` do wybranego folderu.
 
 > Jeśli repo już masz — zaktualizuj: `git pull origin main`
 
