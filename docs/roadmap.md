@@ -88,13 +88,13 @@ Zamiast realizować wszystkie fazy naraz — **krótkie iteracje**, przyrost dzi
 
 **Mapowanie iteracji (orientacyjnie):**
 
-| Iteracja | Zakres |
-|----------|--------|
-| **I0** | Faza 0: lokalne n8n, konwencje, `.env`; opcjonalnie tunel |
-| **I1** | Faza 2 minimalnie + jedno wejście (Discord) + Seatable/Drive |
-| **I2** | Faza 3: ingest → orchestrator stub → HITL lub tania generacja tekstu |
-| **I3** | Jeden kanał social; scheduler w wersji minimalnej (np. ręczny trigger) |
-| **I4+** | Faza 4 (agent, HTCI, pamięć), pełny scheduler, kolejne kanały, Faza 6 |
+| Iteracja | Zakres | Status |
+|----------|--------|--------|
+| **I0** | Faza 0: lokalne n8n, konwencje, `.env`; opcjonalnie tunel | **done** — Docker, `.env.example`, onboarding, konwencje git, reguły IDE |
+| **I1** | Faza 1–2: credential'e, kontrakt `job`, jedno wejście (Discord) + Seatable/Drive | **w toku** — kontrakt `job` (szkic), rejestr credentiali, Discord ingest + HITL reply workflows zbudowane w n8n (do wyeksportowania do repo) |
+| **I2** | Faza 3: ingest → orchestrator stub → HITL lub tania generacja tekstu | planned |
+| **I3** | Jeden kanał social; scheduler w wersji minimalnej (np. ręczny trigger) | planned |
+| **I4+** | Faza 4 (agent, HTCI, pamięć), pełny scheduler, kolejne kanały, Faza 6 | planned |
 
 Po **I2–I3** warto **zatrzymać się** na ocenę, zanim doda się drogie modele lub wiele integracji.
 
@@ -231,7 +231,10 @@ Numer **8** odzwierciedla kolejność logiczną: **dopiero po domknięciu funkcj
 - [x] Trzy warianty dla: hostingu webhooków, magazynu `job`, pierwszego modelu AI — szablon: [decisions-three-variants.md](decisions-three-variants.md) (uzupełnij decyzje w treści).
 - [x] Kontrakt JSON `job` — szkic: [job-contract.md](job-contract.md).
 - [x] Lista credentiali — [credentials-registry.md](credentials-registry.md); rejestr kosztów: uzupełnij link do arkusza w tym pliku.
-- [ ] Uruchomienie lokalnego n8n (Faza 0 / **I0**) — `docker compose up -d` (komentarz w [docker-compose.yml](../docker-compose.yml), zmienne w [.env.example](../.env.example)); backup volume `n8n_data`.
+- [x] Uruchomienie lokalnego n8n (Faza 0 / **I0**) — `docker compose up -d`; działa na porcie 5679.
+- [x] Onboarding — [onboarding-local-setup.md](onboarding-local-setup.md).
+- [x] Wersjonowanie workflow — struktura `workflows/`, skrypty eksport/import ([shared-rules.md](shared-rules.md) § 9).
+- [ ] Eksport istniejących workflow z n8n do repo (Discord ingest, HITL reply) — wymaga `N8N_API_KEY`.
 
 ---
 
@@ -243,3 +246,4 @@ Numer **8** odzwierciedla kolejność logiczną: **dopiero po domknięciu funkcj
 | 1.1 | Migracja VPS przesunięta: dopiero gdy system blisko ukończenia; rozwój na lokalnym n8n + tunel |
 | 1.2 | Renumeracja: migracja VPS z „Faza 0b” na **Faza 8** (logicznie na końcu, po 1–7) |
 | 1.3 | Start pracy z roadmapą: szkic `job`, szablon 3 wariantów, rejestr credentiali; status „w użyciu” |
+| 1.4 | Aktualizacja statusu iteracji (I0 done, I1 w toku); checklist: n8n działa, onboarding, wersjonowanie workflow w repo (`workflows/`, skrypty eksport/import) |

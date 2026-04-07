@@ -32,6 +32,10 @@ Instrukcja: `docs/windsurf-mcp-setup.md`
 
 Preferuj natywne wezly n8n; Code i HTTP Request gdy nie ma odpowiedniego wezla albo integracja natywna nie wystarcza. Pelna zasada: `docs/shared-rules.md` — sekcja 1 (Architektura).
 
-## 4. Wspolne zasady projektu
+## 4. Wersjonowanie workflow
+
+Workflow eksportowane z n8n do `workflows/` (podkatalogi wg typu: `ingest/`, `orchestrator/`, `hitl/` itd.). Szczegoly: `docs/shared-rules.md` — sekcja 9. Skrypty: `scripts/n8n-export.sh`, `scripts/n8n-import.sh`.
+
+## 5. Wspolne zasady projektu
 
 Stosuj zawsze zasady z `docs/shared-rules.md` — to zrodlo prawdy dla wszystkich IDE.

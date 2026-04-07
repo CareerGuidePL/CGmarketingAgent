@@ -50,7 +50,11 @@ Sekcja 1 dotyczy tylko sytuacji opisanych powyżej — nie wywołuj Context7 prz
 
 Przy projektowaniu i edycji workflowów: **preferuj natywne** węzły n8n; **Code** i **HTTP Request** gdy nie ma odpowiedniego węzła albo integracja natywna nie wystarcza. Pełna zasada: `docs/shared-rules.md` → sekcja 1 (Architektura).
 
-## 5. Wspólne zasady projektu
+## 5. Wersjonowanie workflow
+
+Workflow eksportowane z n8n do `workflows/` (podkatalogi wg typu: `ingest/`, `orchestrator/`, `hitl/` itd.). Szczegóły: `docs/shared-rules.md` → sekcja 9. Skrypty: `scripts/n8n-export.sh`, `scripts/n8n-import.sh`.
+
+## 6. Wspólne zasady projektu
 
 Stosuj **zawsze** zasady z `docs/shared-rules.md` — to źródło prawdy dla wszystkich IDE (Cursor, Claude Code, Windsurf).
 

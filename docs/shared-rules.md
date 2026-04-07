@@ -100,7 +100,30 @@ docs/
 .env.example                  # Szablon zmiennych srodowiskowych
 docker-compose.yml            # Lokalny n8n (Docker)
 .gitignore                    # Ignorowane pliki
+scripts/
+  n8n-export.sh               # Eksport workflow z n8n do repo
+  n8n-import.sh               # Import workflow do n8n
+workflows/                    # Eksporty workflow JSON (wersjonowane w git)
+  ingest/                     # cg-ingest-*
+  orchestrator/               # cg-orchestrator-*
+  hitl/                       # cg-hitl-*
+  generate/                   # cg-gen-*
+  distribute/                 # cg-distribute-*
+  store/                      # cg-store-*
+  memory/                     # cg-memory-*
+  scheduler/                  # cg-scheduler-*
+  analytics/                  # cg-analytics-*
+  _archive/                   # Stare wersje (opcjonalnie)
 ```
+
+## 9. Wersjonowanie workflow n8n
+
+- Workflow eksportowane z n8n jako JSON do `workflows/` — podkatalog wg typu (patrz sekcja 7).
+- Nazwy plikow: `<nazwa-workflow-z-n8n>.json` (kebab-case).
+- Wersjonowanie przez git (bez numeracji w nazwach plikow).
+- **Nie eksportuj credentiali** — skrypt `scripts/n8n-export.sh` automatycznie usuwa wartosci sekretow.
+- Po kazdej istotnej zmianie workflow: eksport + commit.
+- Import na nowej instancji: `scripts/n8n-import.sh <plik.json>` lub reczny import w n8n UI.
 
 ## 8. Git: branchy i commity
 
