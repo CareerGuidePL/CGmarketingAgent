@@ -65,7 +65,7 @@ N8N_ENCRYPTION_KEY=tutaj_wklej_wygenerowany_klucz
 docker compose up -d
 ```
 
-Otwórz przeglądarkę: [http://localhost:5678](http://localhost:5678)
+Otwórz przeglądarkę: [http://localhost:5679](http://localhost:5679)
 
 Przy pierwszym uruchomieniu n8n poprosi o założenie konta właściciela — podaj e-mail i hasło (lokalne, nie muszą być prawdziwe).
 
@@ -105,7 +105,7 @@ docker compose up -d
 
 | Problem | Rozwiązanie |
 |---------|-------------|
-| Port 5678 zajęty | Zamknij inną aplikację na tym porcie lub zmień port w `docker-compose.yml` |
+| Port 5679 zajęty | Zamknij inną aplikację na tym porcie lub zmień port w `docker-compose.yml` |
 | `N8N_ENCRYPTION_KEY` błąd przy starcie | Upewnij się, że `.env` istnieje i klucz jest wypełniony |
 | Kontener startuje i od razu się zatrzymuje | Sprawdź logi: `docker compose logs n8n` |
 | Nie pamiętam hasła do n8n | `docker compose down -v` (uwaga: **kasuje dane**) i zacznij od nowa — lub skontaktuj się z prowadzącym projekt |

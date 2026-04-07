@@ -235,6 +235,30 @@ Numer **8** odzwierciedla kolejność logiczną: **dopiero po domknięciu funkcj
 - [x] Onboarding — [onboarding-local-setup.md](onboarding-local-setup.md).
 - [x] Wersjonowanie workflow — struktura `workflows/`, skrypty eksport/import ([shared-rules.md](shared-rules.md) § 9).
 - [ ] Eksport istniejących workflow z n8n do repo (Discord ingest, HITL reply) — wymaga `N8N_API_KEY`.
+- [ ] Zaktualizować `job-contract.md` — uwagi implementacyjne wciąż odwołują się do Google Sheets zamiast Seatable; dodać opis struktury tabel Seatable.
+- [ ] Opisać istniejącą bazę Seatable (tabele, kolumny, relacje) jeśli została już utworzona.
+
+---
+
+## TODO po uruchomieniu maszyny z workflow
+
+Gdy będzie dostępna maszyna z działającymi workflow w n8n:
+
+1. **Wygeneruj klucz API n8n:** n8n → Settings → API → dodaj klucz; wpisz go do `.env` jako `N8N_API_KEY`.
+2. **Wyeksportuj workflow do repo:**
+   ```bash
+   bash scripts/n8n-export.sh
+   ```
+   Sprawdź czy pliki JSON trafiły do odpowiednich katalogów w `workflows/`.
+3. **Przejrzyj eksport:** upewnij się, że credential'e nie zawierają sekretów (skrypt powinien je wyciąć).
+4. **Zrób commit:**
+   ```bash
+   git add workflows/
+   git commit -m "[MS] feat: export existing n8n workflows (Discord ingest, HITL reply)"
+   git push
+   ```
+5. **Uzupełnij stan Seatable:** jeśli baza istnieje — opisz strukturę tabel w `job-contract.md` (tabele, kolumny, typy, relacje) i zaktualizuj uwagi implementacyjne (Sheets → Seatable).
+6. **Odznacz checklistę** powyżej po wykonaniu kroków.
 
 ---
 
