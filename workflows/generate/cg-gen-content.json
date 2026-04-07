@@ -1,0 +1,322 @@
+{
+  "updatedAt": "2026-04-07T20:30:17.345Z",
+  "createdAt": "2026-04-07T15:21:29.716Z",
+  "id": "z7FIfQqHzQGJW4ib",
+  "name": "cg-gen-content",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"job_id\": \"abc-123\",\n  \"raw_text\": \"Dzisiaj mieliśmy świetne szkolenie z AI\",\n  \"channels\": [\"linkedin\"],\n  \"content_type\": \"post\",\n  \"revision_feedback\": \"\"\n}"
+      },
+      "id": "trigger",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\nconst channels = Array.isArray(item.channels) ? item.channels.join(', ') : (item.channels || 'linkedin');\nconst contentType = item.content_type || 'post';\nconst feedback = item.revision_feedback || '';\n\nlet userPrompt = `Przygotuj ${contentType} na kanaly: ${channels}.\n\nMaterial zrodlowy:\n${item.raw_text}`;\n\nif (feedback) {\n  userPrompt += `\\n\\nPoprawki od uzytkownika (zastosuj je):\\n${feedback}`;\n}\n\nconst systemPrompt = `Jestes doswiadczonym copywriterem marketingowym. Tworzysz angazujace tresci na social media.\n\nNAJWAZNIEJSZA ZASADA: ZAWSZE generuj gotowa tresc posta. NIGDY nie pytaj o dodatkowe informacje, nie pros o doprecyzowanie, nie zadawaj pytan. Pracuj z tym co dostales - nawet jesli material zrodlowy jest krotki lub ogolny, stworz z niego najlepszy mozliwy post.\n\nZasady:\n- Pisz po polsku, chyba ze uzytkownik wskaze inaczej\n- Dostosuj ton i dlugosc do kanalu (LinkedIn = profesjonalny, max 3000 znakow; Facebook = luzniejszy; Instagram = krotki + hashtagi)\n- Dodaj odpowiednie emoji i hashtagi jesli pasuja do kanalu\n- Podaj TYLKO gotowa tresc posta - bez meta-komentarzy, bez \"oto post\", bez wyjasnien\n- Jesli jest kilka kanalow, przygotuj osobna wersje dla kazdego, oddzielona naglowkiem kanalu`;\n\nreturn [{ json: { systemPrompt, userPrompt, job_id: item.job_id } }];"
+      },
+      "id": "build-prompt",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.userPrompt }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "={{ $json.systemPrompt }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "llm-chain",
+      "name": "Generate Content",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst jobId = $('Build Prompt').first().json.job_id;\n\nreturn [{ json: {\n  job_id: jobId,\n  generated_text: item.text || item.output || JSON.stringify(item)\n} }];"
+      },
+      "id": "format-output",
+      "name": "Format Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "gemini",
+      "name": "Gemini 2.5 flash",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        448,
+        208
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "oJ3pb8yUSbGS948v",
+          "name": "CG gemini"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Content": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini 2.5 flash": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "cef2a206-3559-4ec6-8b5c-aa2b08872060",
+  "activeVersionId": "cef2a206-3559-4ec6-8b5c-aa2b08872060",
+  "versionCounter": 41,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-07T15:21:29.719Z",
+      "createdAt": "2026-04-07T15:21:29.719Z",
+      "role": "workflow:owner",
+      "workflowId": "z7FIfQqHzQGJW4ib",
+      "projectId": "PXHJPWu3tFvLsdCG",
+      "project": {
+        "updatedAt": "2026-04-06T12:34:09.192Z",
+        "createdAt": "2026-04-06T08:30:03.839Z",
+        "id": "PXHJPWu3tFvLsdCG",
+        "name": "Career Guide <admin@careerguide.pl>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-07T20:30:21.000Z",
+    "createdAt": "2026-04-07T20:30:17.346Z",
+    "versionId": "cef2a206-3559-4ec6-8b5c-aa2b08872060",
+    "workflowId": "z7FIfQqHzQGJW4ib",
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "jsonExample",
+          "jsonExample": "{\n  \"job_id\": \"abc-123\",\n  \"raw_text\": \"Dzisiaj mieliśmy świetne szkolenie z AI\",\n  \"channels\": [\"linkedin\"],\n  \"content_type\": \"post\",\n  \"revision_feedback\": \"\"\n}"
+        },
+        "id": "trigger",
+        "name": "Execute Workflow Trigger",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const item = $input.first().json;\n\nconst channels = Array.isArray(item.channels) ? item.channels.join(', ') : (item.channels || 'linkedin');\nconst contentType = item.content_type || 'post';\nconst feedback = item.revision_feedback || '';\n\nlet userPrompt = `Przygotuj ${contentType} na kanaly: ${channels}.\n\nMaterial zrodlowy:\n${item.raw_text}`;\n\nif (feedback) {\n  userPrompt += `\\n\\nPoprawki od uzytkownika (zastosuj je):\\n${feedback}`;\n}\n\nconst systemPrompt = `Jestes doswiadczonym copywriterem marketingowym. Tworzysz angazujace tresci na social media.\n\nNAJWAZNIEJSZA ZASADA: ZAWSZE generuj gotowa tresc posta. NIGDY nie pytaj o dodatkowe informacje, nie pros o doprecyzowanie, nie zadawaj pytan. Pracuj z tym co dostales - nawet jesli material zrodlowy jest krotki lub ogolny, stworz z niego najlepszy mozliwy post.\n\nZasady:\n- Pisz po polsku, chyba ze uzytkownik wskaze inaczej\n- Dostosuj ton i dlugosc do kanalu (LinkedIn = profesjonalny, max 3000 znakow; Facebook = luzniejszy; Instagram = krotki + hashtagi)\n- Dodaj odpowiednie emoji i hashtagi jesli pasuja do kanalu\n- Podaj TYLKO gotowa tresc posta - bez meta-komentarzy, bez \"oto post\", bez wyjasnien\n- Jesli jest kilka kanalow, przygotuj osobna wersje dla kazdego, oddzielona naglowkiem kanalu`;\n\nreturn [{ json: { systemPrompt, userPrompt, job_id: item.job_id } }];"
+        },
+        "id": "build-prompt",
+        "name": "Build Prompt",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.userPrompt }}",
+          "messages": {
+            "messageValues": [
+              {
+                "message": "={{ $json.systemPrompt }}"
+              }
+            ]
+          },
+          "batching": {}
+        },
+        "id": "llm-chain",
+        "name": "Generate Content",
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.9,
+        "position": [
+          448,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const item = $input.first().json;\nconst jobId = $('Build Prompt').first().json.job_id;\n\nreturn [{ json: {\n  job_id: jobId,\n  generated_text: item.text || item.output || JSON.stringify(item)\n} }];"
+        },
+        "id": "format-output",
+        "name": "Format Output",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          768,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "gemini",
+        "name": "Gemini 2.5 flash",
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          448,
+          208
+        ],
+        "credentials": {
+          "googlePalmApi": {
+            "id": "oJ3pb8yUSbGS948v",
+            "name": "CG gemini"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Execute Workflow Trigger": {
+        "main": [
+          [
+            {
+              "node": "Build Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Prompt": {
+        "main": [
+          [
+            {
+              "node": "Generate Content",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Content": {
+        "main": [
+          [
+            {
+              "node": "Format Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gemini 2.5 flash": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Generate Content",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Career Guide",
+    "name": "Version cef2a206",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-07T20:30:21.340Z",
+        "id": 60,
+        "workflowId": "z7FIfQqHzQGJW4ib",
+        "versionId": "cef2a206-3559-4ec6-8b5c-aa2b08872060",
+        "event": "activated",
+        "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      }
+    ]
+  }
+}

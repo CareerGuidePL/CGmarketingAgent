@@ -1,0 +1,1366 @@
+{
+  "updatedAt": "2026-04-07T21:06:41.314Z",
+  "createdAt": "2026-04-07T18:41:18.859Z",
+  "id": "ov4KpAcVoAuWnEPT",
+  "name": "cg-orchestrator-main",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      },
+      "id": "schedule",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "list",
+        "tableName": "jobs",
+        "viewName": "to-process",
+        "options": {}
+      },
+      "id": "get-jobs",
+      "name": "Get Jobs To Process",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "tableName": "jobs",
+        "searchColumn": "job_id",
+        "searchTerm": "={{ $json.job_id }}",
+        "options": {}
+      },
+      "id": "search-row",
+      "name": "Search Row ID",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableName": "jobs",
+        "rowId": "={{ $json._id }}",
+        "columnsUi": {
+          "columnValues": [
+            {
+              "columnName": "status",
+              "columnValue": "generating"
+            }
+          ]
+        }
+      },
+      "id": "mark-generating",
+      "name": "Mark Generating",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        608,
+        0
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "z7FIfQqHzQGJW4ib"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $('Get Jobs To Process').first().json.job_id }}",
+            "raw_text": "={{ $('Get Jobs To Process').first().json.raw_text }}",
+            "channels": "={{ $('Get Jobs To Process').first().json.channels }}",
+            "content_type": "={{ $('Get Jobs To Process').first().json.content_type }}",
+            "revision_feedback": "={{ $('Get Jobs To Process').first().json.revision_feedback }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "raw_text",
+              "displayName": "raw_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "channels",
+              "displayName": "channels",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "content_type",
+              "displayName": "content_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "revision_feedback",
+              "displayName": "revision_feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "gen-content",
+      "name": "Generate Content",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        800,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableName": "jobs",
+        "rowId": "={{ $('Search Row ID').first().json._id }}",
+        "fieldsToSend": {
+          "values": [
+            {
+              "fieldName": "generated_text",
+              "fieldValue": "={{ $json.generated_text }}"
+            },
+            {
+              "fieldName": "status",
+              "fieldValue": "awaiting_approval"
+            }
+          ]
+        }
+      },
+      "id": "save-generated",
+      "name": "Save Generated Text",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        0
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendAndWait",
+        "guildId": {
+          "mode": "id",
+          "value": "1452941431802040332"
+        },
+        "channelId": {
+          "mode": "id",
+          "value": "1490792473440813199"
+        },
+        "message": "=📋 **Preview — Job {{ $('Get Jobs To Process').first().json.job_id }}**\n\n{{ $('Generate Content').first().json.generated_text }}\n\n---\n✅ Odpowiedz **ok** aby zatwierdzić\n❌ Odpowiedz **nie** aby odrzucić\n✏️ Lub napisz feedback do poprawki",
+        "options": {}
+      },
+      "id": "discord-preview",
+      "name": "Discord Preview",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ],
+      "webhookId": "734e5b71-782a-455d-a7ad-1d545c8054f2",
+      "credentials": {
+        "discordBotApi": {
+          "id": "b4truRzbrjj3C93v",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst response = (item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim().toLowerCase();\n\nlet decision;\nif (response === 'ok' || response === 'tak' || response === 'yes') {\n  decision = 'approve';\n} else if (response === 'nie' || response === 'no' || response === 'odrzuc' || response === 'odrzuć') {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Search Row ID').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\n\nreturn [{ json: { decision, feedback: item.output || item.text || item.content || item.response || '', job_id: jobId, row_id: rowId } }];"
+      },
+      "id": "parse-response",
+      "name": "Parse Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.decision }}",
+                    "rightValue": "approve",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.decision }}",
+                    "rightValue": "reject",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.decision }}",
+                    "rightValue": "revise",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "switch-decision",
+      "name": "Decision",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1600,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableName": "jobs",
+        "rowId": "={{ $json.row_id }}",
+        "fieldsToSend": {
+          "values": [
+            {
+              "fieldName": "status",
+              "fieldValue": "approved"
+            },
+            {
+              "fieldName": "approval_status",
+              "fieldValue": "approved"
+            }
+          ]
+        }
+      },
+      "id": "update-approved",
+      "name": "Set Approved",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        -208
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableName": "jobs",
+        "rowId": "={{ $json.row_id }}",
+        "fieldsToSend": {
+          "values": [
+            {
+              "fieldName": "status",
+              "fieldValue": "rejected"
+            },
+            {
+              "fieldName": "approval_status",
+              "fieldValue": "rejected"
+            }
+          ]
+        }
+      },
+      "id": "update-rejected",
+      "name": "Set Rejected",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        0
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableName": "jobs",
+        "rowId": "={{ $json.row_id }}",
+        "fieldsToSend": {
+          "values": [
+            {
+              "fieldName": "status",
+              "fieldValue": "revision_needed"
+            },
+            {
+              "fieldName": "revision_feedback",
+              "fieldValue": "={{ $json.feedback }}"
+            }
+          ]
+        }
+      },
+      "id": "update-revise",
+      "name": "Set Revision Needed",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        208
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "mode": "id",
+          "value": "1452941431802040332"
+        },
+        "channelId": {
+          "mode": "id",
+          "value": "1490792473440813199"
+        },
+        "content": "=✅ **Job {{ $json.job_id }} zatwierdzony!** Treść gotowa do publikacji.",
+        "options": {}
+      },
+      "id": "discord-approved",
+      "name": "Discord: Approved",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        -208
+      ],
+      "webhookId": "aaacaecb-8874-4f2f-8c57-c3a4b0ea806c",
+      "credentials": {
+        "discordBotApi": {
+          "id": "b4truRzbrjj3C93v",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "mode": "id",
+          "value": "1452941431802040332"
+        },
+        "channelId": {
+          "mode": "id",
+          "value": "1490792473440813199"
+        },
+        "content": "=❌ **Job {{ $json.job_id }} odrzucony.**",
+        "options": {}
+      },
+      "id": "discord-rejected",
+      "name": "Discord: Rejected",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        0
+      ],
+      "webhookId": "e15237a1-05fe-4ea9-9637-6bb4da87d49b",
+      "credentials": {
+        "discordBotApi": {
+          "id": "b4truRzbrjj3C93v",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "mode": "id",
+          "value": "1452941431802040332"
+        },
+        "channelId": {
+          "mode": "id",
+          "value": "1490792473440813199"
+        },
+        "content": "=✏️ **Job {{ $json.job_id }}** — przyjęto feedback, regeneruję treść...",
+        "options": {}
+      },
+      "id": "discord-revise",
+      "name": "Discord: Revising",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        208
+      ],
+      "webhookId": "5c0a67fc-84c2-4724-beae-86135919e0f3",
+      "credentials": {
+        "discordBotApi": {
+          "id": "b4truRzbrjj3C93v",
+          "name": "Discord Bot account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Jobs To Process",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Jobs To Process": {
+      "main": [
+        [
+          {
+            "node": "Search Row ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Row ID": {
+      "main": [
+        [
+          {
+            "node": "Mark Generating",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Generating": {
+      "main": [
+        [
+          {
+            "node": "Generate Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Content": {
+      "main": [
+        [
+          {
+            "node": "Save Generated Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Generated Text": {
+      "main": [
+        [
+          {
+            "node": "Discord Preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord Preview": {
+      "main": [
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Response": {
+      "main": [
+        [
+          {
+            "node": "Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision": {
+      "main": [
+        [
+          {
+            "node": "Set Approved",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Revision Needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Approved": {
+      "main": [
+        [
+          {
+            "node": "Discord: Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Rejected": {
+      "main": [
+        [
+          {
+            "node": "Discord: Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Revision Needed": {
+      "main": [
+        [
+          {
+            "node": "Discord: Revising",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "274bb554-10f3-441c-8865-9002f3eb40d8",
+  "activeVersionId": "274bb554-10f3-441c-8865-9002f3eb40d8",
+  "versionCounter": 32,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-07T18:41:18.864Z",
+      "createdAt": "2026-04-07T18:41:18.864Z",
+      "role": "workflow:owner",
+      "workflowId": "ov4KpAcVoAuWnEPT",
+      "projectId": "PXHJPWu3tFvLsdCG",
+      "project": {
+        "updatedAt": "2026-04-06T12:34:09.192Z",
+        "createdAt": "2026-04-06T08:30:03.839Z",
+        "id": "PXHJPWu3tFvLsdCG",
+        "name": "Career Guide <admin@careerguide.pl>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-07T21:07:41.000Z",
+    "createdAt": "2026-04-07T21:06:41.315Z",
+    "versionId": "274bb554-10f3-441c-8865-9002f3eb40d8",
+    "workflowId": "ov4KpAcVoAuWnEPT",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 2
+              }
+            ]
+          }
+        },
+        "id": "schedule",
+        "name": "Schedule Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "list",
+          "tableName": "jobs",
+          "viewName": "to-process",
+          "options": {}
+        },
+        "id": "get-jobs",
+        "name": "Get Jobs To Process",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          224,
+          0
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "search",
+          "tableName": "jobs",
+          "searchColumn": "job_id",
+          "searchTerm": "={{ $json.job_id }}",
+          "options": {}
+        },
+        "id": "search-row",
+        "name": "Search Row ID",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "tableName": "jobs",
+          "rowId": "={{ $json._id }}",
+          "columnsUi": {
+            "columnValues": [
+              {
+                "columnName": "status",
+                "columnValue": "generating"
+              }
+            ]
+          }
+        },
+        "id": "mark-generating",
+        "name": "Mark Generating",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          608,
+          0
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "z7FIfQqHzQGJW4ib"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "job_id": "={{ $('Get Jobs To Process').first().json.job_id }}",
+              "raw_text": "={{ $('Get Jobs To Process').first().json.raw_text }}",
+              "channels": "={{ $('Get Jobs To Process').first().json.channels }}",
+              "content_type": "={{ $('Get Jobs To Process').first().json.content_type }}",
+              "revision_feedback": "={{ $('Get Jobs To Process').first().json.revision_feedback }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "job_id",
+                "displayName": "job_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "raw_text",
+                "displayName": "raw_text",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "channels",
+                "displayName": "channels",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "content_type",
+                "displayName": "content_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "revision_feedback",
+                "displayName": "revision_feedback",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {}
+        },
+        "id": "gen-content",
+        "name": "Generate Content",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.3,
+        "position": [
+          800,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "tableName": "jobs",
+          "rowId": "={{ $('Search Row ID').first().json._id }}",
+          "fieldsToSend": {
+            "values": [
+              {
+                "fieldName": "generated_text",
+                "fieldValue": "={{ $json.generated_text }}"
+              },
+              {
+                "fieldName": "status",
+                "fieldValue": "awaiting_approval"
+              }
+            ]
+          }
+        },
+        "id": "save-generated",
+        "name": "Save Generated Text",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          1008,
+          0
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "operation": "sendAndWait",
+          "guildId": {
+            "mode": "id",
+            "value": "1452941431802040332"
+          },
+          "channelId": {
+            "mode": "id",
+            "value": "1490792473440813199"
+          },
+          "message": "=📋 **Preview — Job {{ $('Get Jobs To Process').first().json.job_id }}**\n\n{{ $('Generate Content').first().json.generated_text }}\n\n---\n✅ Odpowiedz **ok** aby zatwierdzić\n❌ Odpowiedz **nie** aby odrzucić\n✏️ Lub napisz feedback do poprawki",
+          "options": {}
+        },
+        "id": "discord-preview",
+        "name": "Discord Preview",
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          1200,
+          0
+        ],
+        "webhookId": "734e5b71-782a-455d-a7ad-1d545c8054f2",
+        "credentials": {
+          "discordBotApi": {
+            "id": "b4truRzbrjj3C93v",
+            "name": "Discord Bot account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const item = $input.first().json;\nconst response = (item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim().toLowerCase();\n\nlet decision;\nif (response === 'ok' || response === 'tak' || response === 'yes') {\n  decision = 'approve';\n} else if (response === 'nie' || response === 'no' || response === 'odrzuc' || response === 'odrzuć') {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Search Row ID').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\n\nreturn [{ json: { decision, feedback: item.output || item.text || item.content || item.response || '', job_id: jobId, row_id: rowId } }];"
+        },
+        "id": "parse-response",
+        "name": "Parse Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1408,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.decision }}",
+                      "rightValue": "approve",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.decision }}",
+                      "rightValue": "reject",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.decision }}",
+                      "rightValue": "revise",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "switch-decision",
+        "name": "Decision",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3,
+        "position": [
+          1600,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "tableName": "jobs",
+          "rowId": "={{ $json.row_id }}",
+          "fieldsToSend": {
+            "values": [
+              {
+                "fieldName": "status",
+                "fieldValue": "approved"
+              },
+              {
+                "fieldName": "approval_status",
+                "fieldValue": "approved"
+              }
+            ]
+          }
+        },
+        "id": "update-approved",
+        "name": "Set Approved",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          1808,
+          -208
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "tableName": "jobs",
+          "rowId": "={{ $json.row_id }}",
+          "fieldsToSend": {
+            "values": [
+              {
+                "fieldName": "status",
+                "fieldValue": "rejected"
+              },
+              {
+                "fieldName": "approval_status",
+                "fieldValue": "rejected"
+              }
+            ]
+          }
+        },
+        "id": "update-rejected",
+        "name": "Set Rejected",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          1808,
+          0
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "tableName": "jobs",
+          "rowId": "={{ $json.row_id }}",
+          "fieldsToSend": {
+            "values": [
+              {
+                "fieldName": "status",
+                "fieldValue": "revision_needed"
+              },
+              {
+                "fieldName": "revision_feedback",
+                "fieldValue": "={{ $json.feedback }}"
+              }
+            ]
+          }
+        },
+        "id": "update-revise",
+        "name": "Set Revision Needed",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          1808,
+          208
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "mode": "id",
+            "value": "1452941431802040332"
+          },
+          "channelId": {
+            "mode": "id",
+            "value": "1490792473440813199"
+          },
+          "content": "=✅ **Job {{ $json.job_id }} zatwierdzony!** Treść gotowa do publikacji.",
+          "options": {}
+        },
+        "id": "discord-approved",
+        "name": "Discord: Approved",
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          2000,
+          -208
+        ],
+        "webhookId": "aaacaecb-8874-4f2f-8c57-c3a4b0ea806c",
+        "credentials": {
+          "discordBotApi": {
+            "id": "b4truRzbrjj3C93v",
+            "name": "Discord Bot account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "mode": "id",
+            "value": "1452941431802040332"
+          },
+          "channelId": {
+            "mode": "id",
+            "value": "1490792473440813199"
+          },
+          "content": "=❌ **Job {{ $json.job_id }} odrzucony.**",
+          "options": {}
+        },
+        "id": "discord-rejected",
+        "name": "Discord: Rejected",
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          2000,
+          0
+        ],
+        "webhookId": "e15237a1-05fe-4ea9-9637-6bb4da87d49b",
+        "credentials": {
+          "discordBotApi": {
+            "id": "b4truRzbrjj3C93v",
+            "name": "Discord Bot account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "mode": "id",
+            "value": "1452941431802040332"
+          },
+          "channelId": {
+            "mode": "id",
+            "value": "1490792473440813199"
+          },
+          "content": "=✏️ **Job {{ $json.job_id }}** — przyjęto feedback, regeneruję treść...",
+          "options": {}
+        },
+        "id": "discord-revise",
+        "name": "Discord: Revising",
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          2000,
+          208
+        ],
+        "webhookId": "5c0a67fc-84c2-4724-beae-86135919e0f3",
+        "credentials": {
+          "discordBotApi": {
+            "id": "b4truRzbrjj3C93v",
+            "name": "Discord Bot account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Get Jobs To Process",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Jobs To Process": {
+        "main": [
+          [
+            {
+              "node": "Search Row ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Search Row ID": {
+        "main": [
+          [
+            {
+              "node": "Mark Generating",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mark Generating": {
+        "main": [
+          [
+            {
+              "node": "Generate Content",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Content": {
+        "main": [
+          [
+            {
+              "node": "Save Generated Text",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Generated Text": {
+        "main": [
+          [
+            {
+              "node": "Discord Preview",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Discord Preview": {
+        "main": [
+          [
+            {
+              "node": "Parse Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Response": {
+        "main": [
+          [
+            {
+              "node": "Decision",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Decision": {
+        "main": [
+          [
+            {
+              "node": "Set Approved",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Set Rejected",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Set Revision Needed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Approved": {
+        "main": [
+          [
+            {
+              "node": "Discord: Approved",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Rejected": {
+        "main": [
+          [
+            {
+              "node": "Discord: Rejected",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Revision Needed": {
+        "main": [
+          [
+            {
+              "node": "Discord: Revising",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Career Guide",
+    "name": "Version 274bb554",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-07T21:07:41.152Z",
+        "id": 63,
+        "workflowId": "ov4KpAcVoAuWnEPT",
+        "versionId": "274bb554-10f3-441c-8865-9002f3eb40d8",
+        "event": "activated",
+        "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      }
+    ]
+  }
+}

@@ -114,6 +114,6 @@ docker compose up -d
 
 ## Co dalej
 
-Po uruchomieniu n8n — czekaj na workflowy dostarczane przez prowadzącego projekt. Będą udostępniane jako pliki JSON do importu:
+Workflowy są wersjonowane w repozytorium w katalogu [`workflows/`](../workflows/) (eksport: `bash scripts/n8n-export.sh` przy ustawionym `N8N_API_KEY`). Aktualny stan i otwarte tematy (np. Discord: input vs feedback): [`docs/roadmap.md`](roadmap.md).
 
-`n8n → górne menu → Import from file`
+Import pojedynczego pliku: `n8n → górne menu → Import from file`.

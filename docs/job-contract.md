@@ -75,14 +75,16 @@ Główny magazyn `job` to **Seatable** (free tier, REST API, relacje między tab
 | `channels` | Multiple Select | `facebook`, `linkedin`, `instagram`, `x`, `youtube`, `tiktok` |
 | `approval_status` | Single Select | `pending`, `approved`, `rejected` |
 | `publish_at` | Date | Scheduler (Faza 5) |
-| `status` | Single Select | `ingested`, `generating`, `awaiting_approval`, `approved`, `publishing`, `published`, `failed`, `retracted`, `approved_notified`, `rejected_notified` |
+| `status` | Single Select | `ingested`, `revision_needed`, `generating`, `awaiting_approval`, `approved`, `rejected`, `publishing`, `published`, `failed`, `retracted`, `approved_notified`, `rejected_notified` |
 | `assets` | Long Text | JSON array |
 | `prompt_context` | Long Text | JSON object |
 | `discord_msg_id` | Text | Powiązanie z wiadomością Discord (HITL) |
 | `raw_text` | Long Text | Surowy tekst z wejścia |
 | `author` | Text | Autor wiadomości źródłowej |
+| `generated_text` | Long Text | Wynik generacji (orchestrator → `cg-gen-content`) |
+| `revision_feedback` | Long Text | Feedback z HITL (ścieżka poprawki) |
 
-Widoki: `Default View`, `approved-pending` (filtr: approved + ingested), `reject-pending` (filtr: rejected + ingested).
+Widoki: `Default View`, **`to-process`** — używany przez `cg-orchestrator-main` (lista z limitem 1). **Zalecane filtry:** tylko stany kolejki roboczej, np. `status` = `ingested` **lub** `status` = `revision_needed`; **wykluczyć** `generating` i `awaiting_approval`, żeby ten sam job nie wracał do kolejki przy kolejnym ticku schedulera (por. [roadmap.md — Stan implementacji](roadmap.md)). `approved-pending` (filtr: approved + ingested), `reject-pending` (filtr: rejected + ingested).
 
 **Tabela `config`** — key-value store na ustawienia:
 
@@ -94,6 +96,10 @@ Widoki: `Default View`, `approved-pending` (filtr: approved + ingested), `reject
 #### Uwaga: `channel_specs`
 
 Kolumna `channel_specs` z kontraktu JSON nie istnieje jeszcze w Seatable — do dodania gdy pojawi się potrzeba (I2+).
+
+#### Discord: rozdzielenie wejścia (nowy job) i feedbacku (HITL)
+
+Ingest Discord tworzy job z każdej nowej wiadomości spełniającej reguły (por. workflow `cg-ingest-discord`). Orchestrator może jednocześnie oczekiwać odpowiedzi na preview (**`sendAndWait`**). Przy **jednym kanale** wiadomość z intencją feedbacku może zostać błędnie zinterpretowana jako **nowe zlecenie**. **Do rozwiązania w I2:** osobny kanał, reguły (reply / wątek / prefiks / komendy) albo cienki router AI — opis wariantów: [roadmap.md](roadmap.md) (sekcja stanu), [decisions-three-variants.md § 4](decisions-three-variants.md).
 
 ### Inne
 

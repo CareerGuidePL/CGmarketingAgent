@@ -20,7 +20,7 @@ Uzupełniaj wraz z Fazą 1 ([roadmap.md](roadmap.md)). Opcjonalnie: osobny arkus
 | Dane | Google Sheets | | OAuth |
 | Dane | Google Calendar | | OAuth |
 | Dane | Seatable | `CG Seatable — dev` | Główny magazyn `job`; API key z ustawień konta |
-| AI | (dostawca LLM) | | API key — po wyborze w [decisions-three-variants.md](decisions-three-variants.md) |
+| AI | Google Gemini | `CG Google Gemini — dev` | API key (AI Studio); modele: Gemini 3 Flash (gen treści), Gemini 3.1 Flash-Lite (parsing); upgrade: 3.1 Pro / Claude |
 | Obrazy / wideo | (API HTCI) | | Po wyborze |
 | Social | Meta / LinkedIn / X / … | | OAuth; osobne appy, często App Review |
 | Powiadomienia | Discord | `CG Discord Bot — dev` | Ten sam bot; odpowiedzi statusowe w wątkach |

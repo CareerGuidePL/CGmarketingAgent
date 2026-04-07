@@ -27,7 +27,7 @@ Dokument zbiera ustalenia dotyczące automatyzacji marketingowej opartej na **n8
 
 **Magazyn:** Google Drive i/lub Seatable, Google Kalendarz, Google Sheets. Opcje na brzegu: Discord?, BLOG SEO?, Statystyki?
 
-**Przepływ treści (semantyka):** **agent zbiera i scala informacje ze wszystkich inputów** (kanały, polecenia, pliki, specyfikacja kanału wyjścia, pamięć, kalendarz itd.), **na tej podstawie składa zaawansowany prompt**, który **steruje generowaniem treści**. To nie jest „prompt tworzy agenta”.
+**Przepływ treści (semantyka):** **agent zbiera i scala informacje ze wszystkich inputów** (kanały, polecenia, pliki, załączone zdjęcia i materiały, specyfikacja kanału wyjścia, pamięć, kalendarz itd.), **na tej podstawie składa zaawansowany prompt** (m.in. pod generację grafiki lub copy), który **steruje generowaniem treści**. Zdanie „prompt tworzy agenta” odrzuca **błędne uproszczenie**: że wystarczy jeden statyczny meta-prompt zamiast procesu agregacji — **to agent składa prompt pod konkretne zadanie z realnych wejść**, a nie odwrotnie.
 
 **Architektura logiczna:** jeden **workflow-orchestrator** i **wiele pod-workflowów** (jedna odpowiedzialność każdy), wspólny **kontrakt danych** (`job`).
 
@@ -91,12 +91,34 @@ Zamiast realizować wszystkie fazy naraz — **krótkie iteracje**, przyrost dzi
 | Iteracja | Zakres | Status |
 |----------|--------|--------|
 | **I0** | Faza 0: lokalne n8n, konwencje, `.env`; opcjonalnie tunel | **done** — Docker, `.env.example`, onboarding, konwencje git, reguły IDE |
-| **I1** | Faza 1–2: credential'e, kontrakt `job`, jedno wejście (Discord) + Seatable/Drive | **w toku** — kontrakt `job` (szkic), rejestr credentiali, Discord ingest + HITL reply workflows zbudowane w n8n (do wyeksportowania do repo) |
-| **I2** | Faza 3: ingest → orchestrator stub → HITL lub tania generacja tekstu | planned |
+| **I1** | Faza 1–2: credential'e, kontrakt `job`, jedno wejście (Discord) + Seatable/Drive | **w toku** — kontrakt `job` (szkic), rejestr credentiali, Seatable; w n8n i repo: `cg-ingest-discord`, `cg-hitl-discord-reply`; API n8n + eksport workflowów do `workflows/` |
+| **I2** | Faza 3: ingest → orchestrator → HITL lub tania generacja tekstu | **w toku (częściowo)** — `cg-orchestrator-main` + `cg-gen-content` (Gemini), HITL przez Discord `sendAndWait` w orchestratorze; **do domknięcia:** rozdzielenie **input vs feedback** na Discordzie, spójne widoki `to-process` w Seatable, ograniczenie równoległych runów schedulera względem **Waiting** |
 | **I3** | Jeden kanał social; scheduler w wersji minimalnej (np. ręczny trigger) | planned |
 | **I4+** | Faza 4 (agent, HTCI, pamięć), pełny scheduler, kolejne kanały, Faza 6 | planned |
 
 Po **I2–I3** warto **zatrzymać się** na ocenę, zanim doda się drogie modele lub wiele integracji.
+
+---
+
+## Stan implementacji i otwarte problemy (2026-04-07)
+
+**Instancja lokalna n8n** (np. port 5679, `N8N_API_*` w `.env`): działają workflowy **cg-ingest-discord**, **cg-gen-content** (sub-workflow), **cg-orchestrator-main** (schedule co 2 min, lista z widoku Seatable `to-process`, **Mark Generating** → `generating`, potem generacja, zapis `awaiting_approval`, preview na Discordzie), **cg-hitl-discord-reply** (legacy: polling widoków — zwykle wyłączony, gdy HITL jest w orchestratorze).
+
+**Repozytorium `workflows/`:** cztery eksporty zsynchronizowane ze skryptem `scripts/n8n-export.sh`: `ingest/`, `hitl/`, `orchestrator/`, `generate/`.
+
+**Ustalenia operacyjne (debug):**
+
+- Węzeł SeaTable **Mark Generating** musi faktycznie wysłać aktualizację kolumny **`status` = `generating`** — pusta sekcja „Columns to Send” powoduje, że job zostaje w kolejce i schedulery mogą **wielokrotnie** generować treść dla tego samego `job_id`.
+- Widok **`to-process`** powinien obejmować wyłącznie stany **kolejki roboczej** (np. `ingested`, `revision_needed`) i **nie** zawierać `generating` ani `awaiting_approval` — inaczej ten sam rekord może być ponownie pobrany przy kolejnym ticku.
+
+**Do rozwiązania — zarządzanie input vs feedback (Discord):**
+
+- **Problem:** Jeden kanał Discord jest czytany przez **ingest** (każda nowa wiadomość → potencjalnie nowy job) oraz przez orchestrator (**`sendAndWait`** na preview). Wiadomość z intencją *feedback do preview* może zostać zarejestrowana jako **nowy job**; równolegle harmonogram orchestratora uruchamia **osobne** wykonania niezależnie od stanu **Waiting** — powstaje pętla i gubiony kontekst HITL.
+- **Warianty rozwiązania (do wyboru lub łączenia):**
+  1. **Dodatkowy kanał** — osobny kanał tylko na nowe zlecenia (ingest) vs kanał wyłącznie pod preview i odpowiedzi operatora.
+  2. **Flagowanie wypowiedzi** — konwencja tekstu (prefiks), slash commands, albo reguły Discord (odpowiedź / wątek pod wiadomością bota), aby ingest **pomijał** wiadomości-traktowane-jako-feedback.
+  3. **Router AI (cienka warstwa)** — klasyfikacja intencji przed routingiem (`new_job` | `hitl_feedback` | `off_topic`); **nie** zastępuje n8n jako orchestratora — tylko wspiera routing; twarde reguły (np. reply pod botem) zostają pierwsze.
+- Szczegóły decyzyjne: [decisions-three-variants.md — § 4](decisions-three-variants.md).
 
 ---
 
@@ -234,7 +256,7 @@ Numer **8** odzwierciedla kolejność logiczną: **dopiero po domknięciu funkcj
 - [x] Uruchomienie lokalnego n8n (Faza 0 / **I0**) — `docker compose up -d`; działa na porcie 5679.
 - [x] Onboarding — [onboarding-local-setup.md](onboarding-local-setup.md).
 - [x] Wersjonowanie workflow — struktura `workflows/`, skrypty eksport/import ([shared-rules.md](shared-rules.md) § 9).
-- [x] Eksport istniejących workflow z n8n do repo (Discord ingest, HITL reply) — wymaga `N8N_API_KEY`.
+- [x] Eksport workflow z n8n do repo — **cztery** pliki: ingest, HITL, orchestrator, gen-content (`scripts/n8n-export.sh`, `N8N_API_KEY`).
 - [x] Zaktualizować `job-contract.md` — Seatable jako źródło prawdy, opis aktualnej struktury tabel.
 - [x] Opisać istniejącą bazę Seatable (tabele `jobs` + `config`, kolumny, widoki) w `job-contract.md`.
 
@@ -271,3 +293,4 @@ Gdy będzie dostępna maszyna z działającymi workflow w n8n:
 | 1.2 | Renumeracja: migracja VPS z „Faza 0b” na **Faza 8** (logicznie na końcu, po 1–7) |
 | 1.3 | Start pracy z roadmapą: szkic `job`, szablon 3 wariantów, rejestr credentiali; status „w użyciu” |
 | 1.4 | Aktualizacja statusu iteracji (I0 done, I1 w toku); checklist: n8n działa, onboarding, wersjonowanie workflow w repo (`workflows/`, skrypty eksport/import) |
+| 1.5 | Stan n8n: orchestrator + gen-content + eksport 4 workflowów; Mark Generating / widok `to-process`; **otwarty temat:** input vs feedback na Discordzie (kanał / flagi / router AI) — [decisions-three-variants.md § 4](decisions-three-variants.md) |

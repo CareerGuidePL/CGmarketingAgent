@@ -2,7 +2,7 @@
 
 Projekt automatyzacji marketingowej oparty na n8n workflows.
 
-Roadmap (fazy, iteracje, koszt): `docs/roadmap.md`; szkic kontraktu `job`: `docs/job-contract.md`.
+Roadmap (fazy, iteracje, koszt, **aktualny stan n8n i otwarte problemy**): `docs/roadmap.md`; szkic kontraktu `job`: `docs/job-contract.md`; warianty decyzji (m.in. Discord input vs feedback): `docs/decisions-three-variants.md`.
 
 ## Zasady projektu
 

@@ -2,6 +2,8 @@
 
 Eksporty workflow z n8n przechowywane w repozytorium (wersjonowanie przez git).
 
+**Stan na 2026-04-07:** w repo cztery workflowy zsynchronizowane z lokalną instancją: `cg-ingest-discord`, `cg-hitl-discord-reply`, `cg-orchestrator-main`, `cg-gen-content` (katalogi `ingest/`, `hitl/`, `orchestrator/`, `generate/`). Szczegóły przepływu i otwarte tematy (m.in. Discord input vs feedback): [roadmap.md](../docs/roadmap.md).
+
 ## Struktura katalogów
 
 | Katalog | Zakres | Prefiks nazw w n8n |
