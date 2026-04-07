@@ -57,6 +57,46 @@ Jednolity payload między workflowami (`Execute Workflow`, webhooki): orchestrat
 
 ## Uwagi implementacyjne
 
-- W **Google Sheets** pierwszy wiersz może mapować płaskie kolumny; zagnieżdżone pola (`assets`, `channel_specs`) trzymać jako JSON w jednej komórce albo rozbić na osobne arkusze później.
+### Źródło prawdy: Seatable
+
+Główny magazyn `job` to **Seatable** (free tier, REST API, relacje między tabelami) — nie Google Sheets. Sheets pozostaje jedynie do rejestru kosztów i raportów analitycznych.
+
+#### Aktualna struktura w Seatable (baza: „CG Marketing Agent")
+
+**Tabela `jobs`** — główna tabela z rekordami job:
+
+| Kolumna | Typ | Opcje / uwagi |
+|---|---|---|
+| `job_id` | Text | UUID, klucz główny |
+| `crated_at` | Date | ⚠️ literówka w nazwie (powinno być `created_at`) |
+| `updated_at` | Date | |
+| `source` | Single Select | `discord` |
+| `content_type` | Single Select | `post`, `story`, `video_script`, `image` |
+| `channels` | Multiple Select | `facebook`, `linkedin`, `instagram`, `x`, `youtube`, `tiktok` |
+| `approval_status` | Single Select | `pending`, `approved`, `rejected` |
+| `publish_at` | Date | Scheduler (Faza 5) |
+| `status` | Single Select | `ingested`, `generating`, `awaiting_approval`, `approved`, `publishing`, `published`, `failed`, `retracted`, `approved_notified`, `rejected_notified` |
+| `assets` | Long Text | JSON array |
+| `prompt_context` | Long Text | JSON object |
+| `discord_msg_id` | Text | Powiązanie z wiadomością Discord (HITL) |
+| `raw_text` | Long Text | Surowy tekst z wejścia |
+| `author` | Text | Autor wiadomości źródłowej |
+
+Widoki: `Default View`, `approved-pending` (filtr: approved + ingested), `reject-pending` (filtr: rejected + ingested).
+
+**Tabela `config`** — key-value store na ustawienia:
+
+| Kolumna | Typ |
+|---|---|
+| `key` | Text |
+| `value` | Text |
+
+#### Uwaga: `channel_specs`
+
+Kolumna `channel_specs` z kontraktu JSON nie istnieje jeszcze w Seatable — do dodania gdy pojawi się potrzeba (I2+).
+
+### Inne
+
 - **Kalendarz:** wydarzenia powiązane z `job_id` (roadmapa).
+- **Google Drive:** assety binarne (obrazy, wideo) — `drive_file_id` w rekordzie job/asset.
 - Zmiany kontraktu: wpis w [decisions-three-variants.md](decisions-three-variants.md) lub krótka notka w historii `roadmap.md`.

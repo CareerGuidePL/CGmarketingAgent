@@ -235,8 +235,8 @@ Numer **8** odzwierciedla kolejność logiczną: **dopiero po domknięciu funkcj
 - [x] Onboarding — [onboarding-local-setup.md](onboarding-local-setup.md).
 - [x] Wersjonowanie workflow — struktura `workflows/`, skrypty eksport/import ([shared-rules.md](shared-rules.md) § 9).
 - [x] Eksport istniejących workflow z n8n do repo (Discord ingest, HITL reply) — wymaga `N8N_API_KEY`.
-- [ ] Zaktualizować `job-contract.md` — uwagi implementacyjne wciąż odwołują się do Google Sheets zamiast Seatable; dodać opis struktury tabel Seatable.
-- [ ] Opisać istniejącą bazę Seatable (tabele, kolumny, relacje) jeśli została już utworzona.
+- [x] Zaktualizować `job-contract.md` — Seatable jako źródło prawdy, opis aktualnej struktury tabel.
+- [x] Opisać istniejącą bazę Seatable (tabele `jobs` + `config`, kolumny, widoki) w `job-contract.md`.
 
 ---
 
