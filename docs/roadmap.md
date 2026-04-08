@@ -92,7 +92,7 @@ Zamiast realizować wszystkie fazy naraz — **krótkie iteracje**, przyrost dzi
 |----------|--------|--------|
 | **I0** | Faza 0: lokalne n8n, konwencje, `.env`; opcjonalnie tunel | **done** — Docker, `.env.example`, onboarding, konwencje git, reguły IDE |
 | **I1** | Faza 1–2: credential'e, kontrakt `job`, jedno wejście (Discord) + Seatable/Drive | **w toku** — kontrakt `job` (szkic), rejestr credentiali, Seatable; w n8n i repo: `cg-ingest-discord`, `cg-hitl-discord-reply`; API n8n + eksport workflowów do `workflows/` |
-| **I2** | Faza 3: ingest → orchestrator → HITL lub tania generacja tekstu | **w toku (częściowo)** — `cg-orchestrator-main` + `cg-gen-content` (Gemini), HITL przez Discord `sendAndWait` w orchestratorze; **do domknięcia:** rozdzielenie **input vs feedback** na Discordzie, spójne widoki `to-process` w Seatable, ograniczenie równoległych runów schedulera względem **Waiting** |
+| **I2** | Faza 3: ingest → orchestrator → HITL lub tania generacja tekstu | **w toku (częściowo)** — `cg-orchestrator-main` + `cg-gen-content` (Gemini), HITL przez Discord `sendAndWait` (odpowiedź w tekście, parsowanie działa); **do domknięcia:** spójne widoki `to-process` w Seatable, ograniczenie równoległych runów schedulera względem **Waiting**; opcjonalnie twardszy rozdział **input vs feedback** (drugi kanał / reguły — patrz [decisions-three-variants.md § 4](decisions-three-variants.md)) |
 | **I3** | Jeden kanał social; scheduler w wersji minimalnej (np. ręczny trigger) | planned |
 | **I4+** | Faza 4 (agent, HTCI, pamięć), pełny scheduler, kolejne kanały, Faza 6 | planned |
 
@@ -100,7 +100,7 @@ Po **I2–I3** warto **zatrzymać się** na ocenę, zanim doda się drogie model
 
 ---
 
-## Stan implementacji i otwarte problemy (2026-04-07)
+## Stan implementacji i otwarte problemy (2026-04-09)
 
 **Instancja lokalna n8n** (np. port 5679, `N8N_API_*` w `.env`): działają workflowy **cg-ingest-discord**, **cg-gen-content** (sub-workflow), **cg-orchestrator-main** (schedule co 2 min, lista z widoku Seatable `to-process`, **Mark Generating** → `generating`, potem generacja, zapis `awaiting_approval`, preview na Discordzie), **cg-hitl-discord-reply** (legacy: polling widoków — zwykle wyłączony, gdy HITL jest w orchestratorze).
 
@@ -108,18 +108,14 @@ Po **I2–I3** warto **zatrzymać się** na ocenę, zanim doda się drogie model
 
 **Ustalenia operacyjne (debug):**
 
-- Węzeł SeaTable **Mark Generating** musi faktycznie wysłać aktualizację kolumny **`status` = `generating`** — pusta sekcja „Columns to Send” powoduje, że job zostaje w kolejce i schedulery mogą **wielokrotnie** generować treść dla tego samego `job_id`.
+- Węzeł SeaTable **Mark Generating** musi faktycznie wysłać aktualizację kolumny **`status` = `generating`** — pusta sekcja kolumn do wysłania powoduje, że job zostaje w kolejce i schedulery mogą **wielokrotnie** generować treść dla tego samego `job_id`.
 - Widok **`to-process`** powinien obejmować wyłącznie stany **kolejki roboczej** (np. `ingested`, `revision_needed`) i **nie** zawierać `generating` ani `awaiting_approval` — inaczej ten sam rekord może być ponownie pobrany przy kolejnym ticku.
 
-**Do rozwiązania — zarządzanie input vs feedback (Discord):**
+**Discord — feedback do postów (HITL), stan 2026-04-09:**
 
-- **Problem:** Jeden kanał Discord jest czytany przez **ingest** oraz przez orchestrator (**`sendAndWait`** na preview). Wiadomość z intencją *feedback* mogła trafić jako **nowy job**; równolegle harmonogram orchestratora uruchamia **osobne** wykonania niezależnie od **Waiting**.
-- **Częściowo wdrożone (2026-04-08):** `cg-ingest-discord` — pomija **reply** (`message_reference`), zawsze **aktualizuje kursor** `discord_last_message_id` (ścieżka „tylko reply” → brak zapętlenia).
-- **Warianty dalsze (do wyboru lub łączenia):**
-  1. **Dodatkowy kanał** — ingest tylko na kanale zleceń vs preview/HITL osobno.
-  2. **Flagowanie** — prefiks / slash / reguły na wątek (dla feedbacku **bez** reply pod wiadomością).
-  3. **Router AI (cienka warstwa)** — klasyfikacja intencji; twarde reguły zostają pierwsze.
-- Szczegóły: [decisions-three-variants.md — § 4](decisions-three-variants.md).
+- **Naprawione:** w `cg-orchestrator-main` węzeł Discord **`sendAndWait`** ma **`responseType: freeText`**, a węzeł **Code** (Parse Response) odczytuje treść odpowiedzi z **`item.data.text`** (zgodnie z payloadem zwracanym przez ten węzeł) — zatwierdzenie / odrzucenie / feedback do poprawki trafiają do logiki i zapisu w Seatable. Aktualizacje wierszy w SeaTable w eksporcie używają **`columnsUi` / `columnValues`** (aktualny kształt węzła w n8n).
+- **Publiczny URL dla webhooków Discord (Send and Wait):** w repozytorium jest **opcjonalny** serwis **ngrok** w `docker-compose.yml` (profil `tunnel`, interfejs agenta na hoście **http://127.0.0.1:4041** — uniknięcie kolizji z lokalnym ngrokiem na :4040). Po skopiowaniu HTTPS z panelu ngrok ustaw w `.env` **`WEBHOOK_URL`** i **`N8N_HOST`**, zrestartuj n8n — szczegóły: komentarze w [docker-compose.yml](../docker-compose.yml) i [.env.example](../.env.example).
+- **Nadal świadomie:** jeden kanał dla **ingest** i **preview** — `cg-ingest-discord` od **2026-04-08** pomija wiadomości będące **reply** (`message_reference`) i przesuwa `discord_last_message_id`, żeby uniknąć pętli. Pełny rozdział treści (drugi kanał, prefiksy, klasyfikator) pozostaje **opcjonalnym** uszczelnieniem: [decisions-three-variants.md — § 4](decisions-three-variants.md).
 
 ---
 
@@ -296,3 +292,4 @@ Gdy będzie dostępna maszyna z działającymi workflow w n8n:
 | 1.4 | Aktualizacja statusu iteracji (I0 done, I1 w toku); checklist: n8n działa, onboarding, wersjonowanie workflow w repo (`workflows/`, skrypty eksport/import) |
 | 1.5 | Stan n8n: orchestrator + gen-content + eksport 4 workflowów; Mark Generating / widok `to-process`; **otwarty temat:** input vs feedback na Discordzie (kanał / flagi / router AI) — [decisions-three-variants.md § 4](decisions-three-variants.md) |
 | 1.6 | Ingest Discord: pomijanie reply (`message_reference`), spójne przesuwanie `discord_last_message_id`; dokumentacja §4 / job-contract zaktualizowane |
+| 1.7 | HITL: `freeText` + parsowanie `data.text` w orchestratorze; SeaTable `columnsUi` w eksporcie; opcjonalny ngrok w Docker Compose (`tunnel`, :4041); roadmap § stan / I2 |

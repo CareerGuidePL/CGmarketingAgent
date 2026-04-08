@@ -44,9 +44,11 @@ Edytuj ten plik w miarę ustaleń; wersje można datować na końcu.
 
 ## 4. Discord — rozdzielenie **nowego wejścia (job)** i **feedbacku (HITL)**
 
-**Kontekst:** ingest i orchestrator (`sendAndWait` na preview) mogą dzielić ten sam kanał; wiadomość-feedback jest wtedy ryzykiem **podwójnego** wpisu (nowy job + zgubiony HITL). Decyzja **otwarta** co do pełnego modelu (2026-04-07).
+**Kontekst:** ingest i orchestrator (`sendAndWait` na preview) mogą dzielić ten sam kanał; wiadomość-feedback jest wtedy ryzykiem **podwójnego** wpisu (nowy job + zgubiony HITL). Pełny model rozdziału kanałów/reguł pozostaje **opcjonalny**; ścieżka **komunikacji odpowiedzi HITL** jest już domknięta w orchestratorze (2026-04-09).
 
-**Wdrożone częściowo (2026-04-08):** workflow `cg-ingest-discord` pomija wiadomości będące **odpowiedzią** (pole `message_reference` z Discord API) i zawsze przesuwa kursor `discord_last_message_id` — eliminuje pętlę ingestu i część kolizji z HITL, o ile użytkownik odpowiada przez **Reply**. Zwykły nowy post na kanale nadal może być traktowany jako job.
+**Wdrożone (2026-04-08):** workflow `cg-ingest-discord` pomija wiadomości będące **odpowiedzią** (pole `message_reference` z Discord API) i zawsze przesuwa kursor `discord_last_message_id` — eliminuje pętlę ingestu i część kolizji z HITL, o ile użytkownik odpowiada przez **Reply**. Zwykły nowy post na kanale nadal może być traktowany jako job.
+
+**Wdrożone (2026-04-09):** w `cg-orchestrator-main` — Discord **`sendAndWait`** z **`responseType: freeText`** oraz parsowanie odpowiedzi z **`data.text`** w węźle Code; publiczny webhook: opcjonalny **ngrok** w `docker-compose` (profil `tunnel`), zmienna **`NGROK_AUTHTOKEN`** — patrz [.env.example](../.env.example).
 
 | Wariant | Typowo | Efekt (realistycznie) | Wybór / data |
 |---------|--------|------------------------|--------------|
@@ -64,3 +66,4 @@ Edytuj ten plik w miarę ustaleń; wersje można datować na końcu.
 |------|--------|
 | 2026-04-04 | Utworzenie szablonu z roadmapy |
 | 2026-04-07 | § 4 — Discord input vs feedback (warianty; decyzja otwarta) |
+| 2026-04-09 | § 4 — dopisek: HITL `freeText` + `data.text`, ngrok w compose; pełny rozdział kanałów nadal opcjonalny |

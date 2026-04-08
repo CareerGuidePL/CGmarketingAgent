@@ -1,6 +1,14 @@
 # Local n8n (self-hosted). See `.env.example` — copy to `.env` and set N8N_ENCRYPTION_KEY.
 # Start: `docker compose up -d`  →  http://127.0.0.1:5679
 # Data persists in Docker volume `n8n_data` (SQLite under /home/node/.n8n).
+#
+# Public URL (Discord webhooks / Send and Wait): optional ngrok sidecar — same Docker network as n8n.
+#   1. Set NGROK_AUTHTOKEN in `.env` (https://dashboard.ngrok.com/get-started/your-authtoken)
+#   2. Sprawdź `docker ps`: stary kontener **ngrok** (np. z innego projektu) często mapuje :4040 i `--domain=*.ngrok-free.dev`.
+#      Koliduje z tym stackiem → brak startu na :4040, ERR_NGROK_334 albo błąd w przeglądarce; zatrzymaj/usuń go (`docker stop ngrok`).
+#   3. docker compose --profile tunnel up -d
+#   4. Open http://127.0.0.1:4041 → copy HTTPS URL → set WEBHOOK_URL + N8N_HOST in `.env`, restart n8n
+#      (4041 na hoście: uniknięcie konfliktu z lokalnym `ngrok.exe`, który zwykle zajmuje :4040)
 
 services:
   n8n:
@@ -19,6 +27,22 @@ services:
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
     volumes:
       - n8n_data:/home/node/.n8n
+
+  # Tunel do n8n po nazwie serwisu (wewnętrzny port 5678 — NIE 5679; 5679 jest tylko na hoście).
+  ngrok:
+    profiles: ["tunnel"]
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    depends_on:
+      - n8n
+    command:
+      - "http"
+      - "n8n:5678"
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:-}
+    ports:
+      # W kontenerze nadal 4040 (interfejs agenta). Na hoście 4041 — lokalny ngrok często trzyma już :4040.
+      - "127.0.0.1:4041:4040"
 
 volumes:
   n8n_data:

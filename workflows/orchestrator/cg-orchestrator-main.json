@@ -184,15 +184,15 @@
         "operation": "update",
         "tableName": "jobs",
         "rowId": "={{ $('Search Row ID').first().json._id }}",
-        "fieldsToSend": {
-          "values": [
+        "columnsUi": {
+          "columnValues": [
             {
-              "fieldName": "generated_text",
-              "fieldValue": "={{ $json.generated_text }}"
+              "columnName": "generated_text",
+              "columnValue": "={{ $json.generated_text }}"
             },
             {
-              "fieldName": "status",
-              "fieldValue": "awaiting_approval"
+              "columnName": "status",
+              "columnValue": "awaiting_approval"
             }
           ]
         }
@@ -225,6 +225,7 @@
           "value": "1490792473440813199"
         },
         "message": "=📋 **Preview — Job {{ $('Get Jobs To Process').first().json.job_id }}**\n\n{{ $('Generate Content').first().json.generated_text }}\n\n---\n✅ Odpowiedz **ok** aby zatwierdzić\n❌ Odpowiedz **nie** aby odrzucić\n✏️ Lub napisz feedback do poprawki",
+        "responseType": "freeText",
         "options": {}
       },
       "id": "discord-preview",
@@ -245,7 +246,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first().json;\nconst response = (item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim().toLowerCase();\n\nlet decision;\nif (response === 'ok' || response === 'tak' || response === 'yes') {\n  decision = 'approve';\n} else if (response === 'nie' || response === 'no' || response === 'odrzuc' || response === 'odrzuć') {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Search Row ID').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\n\nreturn [{ json: { decision, feedback: item.output || item.text || item.content || item.response || '', job_id: jobId, row_id: rowId } }];"
+        "jsCode": "const item = $input.first().json;\nconst response = (item.data?.text || item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim().toLowerCase();\n\nlet decision;\nif (response === 'ok' || response === 'tak' || response === 'yes') {\n  decision = 'approve';\n} else if (response === 'nie' || response === 'no' || response === 'odrzuc' || response === 'odrzuć') {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Search Row ID').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\nconst feedback = item.data?.text || item.output || item.text || item.content || item.response || '';\n\nreturn [{ json: { decision, feedback, job_id: jobId, row_id: rowId } }];"
       },
       "id": "parse-response",
       "name": "Parse Response",
@@ -262,6 +263,12 @@
           "values": [
             {
               "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
                 "conditions": [
                   {
                     "leftValue": "={{ $json.decision }}",
@@ -277,6 +284,12 @@
             },
             {
               "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
                 "conditions": [
                   {
                     "leftValue": "={{ $json.decision }}",
@@ -292,6 +305,12 @@
             },
             {
               "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
                 "conditions": [
                   {
                     "leftValue": "={{ $json.decision }}",
@@ -323,15 +342,15 @@
         "operation": "update",
         "tableName": "jobs",
         "rowId": "={{ $json.row_id }}",
-        "fieldsToSend": {
-          "values": [
+        "columnsUi": {
+          "columnValues": [
             {
-              "fieldName": "status",
-              "fieldValue": "approved"
+              "columnName": "status",
+              "columnValue": "approved"
             },
             {
-              "fieldName": "approval_status",
-              "fieldValue": "approved"
+              "columnName": "approval_status",
+              "columnValue": "approved"
             }
           ]
         }
@@ -356,15 +375,15 @@
         "operation": "update",
         "tableName": "jobs",
         "rowId": "={{ $json.row_id }}",
-        "fieldsToSend": {
-          "values": [
+        "columnsUi": {
+          "columnValues": [
             {
-              "fieldName": "status",
-              "fieldValue": "rejected"
+              "columnName": "status",
+              "columnValue": "rejected"
             },
             {
-              "fieldName": "approval_status",
-              "fieldValue": "rejected"
+              "columnName": "approval_status",
+              "columnValue": "rejected"
             }
           ]
         }
@@ -389,15 +408,15 @@
         "operation": "update",
         "tableName": "jobs",
         "rowId": "={{ $json.row_id }}",
-        "fieldsToSend": {
-          "values": [
+        "columnsUi": {
+          "columnValues": [
             {
-              "fieldName": "status",
-              "fieldValue": "revision_needed"
+              "columnName": "status",
+              "columnValue": "revision_needed"
             },
             {
-              "fieldName": "revision_feedback",
-              "fieldValue": "={{ $json.feedback }}"
+              "columnName": "revision_feedback",
+              "columnValue": "={{ $json.feedback }}"
             }
           ]
         }
@@ -917,6 +936,7 @@
             "value": "1490792473440813199"
           },
           "message": "=📋 **Preview — Job {{ $('Get Jobs To Process').first().json.job_id }}**\n\n{{ $('Generate Content').first().json.generated_text }}\n\n---\n✅ Odpowiedz **ok** aby zatwierdzić\n❌ Odpowiedz **nie** aby odrzucić\n✏️ Lub napisz feedback do poprawki",
+          "responseType": "freeText",
           "options": {}
         },
         "id": "discord-preview",
@@ -937,7 +957,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const item = $input.first().json;\nconst response = (item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim().toLowerCase();\n\nlet decision;\nif (response === 'ok' || response === 'tak' || response === 'yes') {\n  decision = 'approve';\n} else if (response === 'nie' || response === 'no' || response === 'odrzuc' || response === 'odrzuć') {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Search Row ID').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\n\nreturn [{ json: { decision, feedback: item.output || item.text || item.content || item.response || '', job_id: jobId, row_id: rowId } }];"
+          "jsCode": "const item = $input.first().json;\nconst response = (item.data?.text || item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim().toLowerCase();\n\nlet decision;\nif (response === 'ok' || response === 'tak' || response === 'yes') {\n  decision = 'approve';\n} else if (response === 'nie' || response === 'no' || response === 'odrzuc' || response === 'odrzuć') {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Search Row ID').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\nconst feedback = item.data?.text || item.output || item.text || item.content || item.response || '';\n\nreturn [{ json: { decision, feedback, job_id: jobId, row_id: rowId } }];"
         },
         "id": "parse-response",
         "name": "Parse Response",
@@ -954,6 +974,12 @@
             "values": [
               {
                 "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
                   "conditions": [
                     {
                       "leftValue": "={{ $json.decision }}",
@@ -969,6 +995,12 @@
               },
               {
                 "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
                   "conditions": [
                     {
                       "leftValue": "={{ $json.decision }}",
@@ -984,6 +1016,12 @@
               },
               {
                 "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
                   "conditions": [
                     {
                       "leftValue": "={{ $json.decision }}",
@@ -1015,15 +1053,15 @@
           "operation": "update",
           "tableName": "jobs",
           "rowId": "={{ $json.row_id }}",
-          "fieldsToSend": {
-            "values": [
+          "columnsUi": {
+            "columnValues": [
               {
-                "fieldName": "status",
-                "fieldValue": "approved"
+                "columnName": "status",
+                "columnValue": "approved"
               },
               {
-                "fieldName": "approval_status",
-                "fieldValue": "approved"
+                "columnName": "approval_status",
+                "columnValue": "approved"
               }
             ]
           }
@@ -1048,15 +1086,15 @@
           "operation": "update",
           "tableName": "jobs",
           "rowId": "={{ $json.row_id }}",
-          "fieldsToSend": {
-            "values": [
+          "columnsUi": {
+            "columnValues": [
               {
-                "fieldName": "status",
-                "fieldValue": "rejected"
+                "columnName": "status",
+                "columnValue": "rejected"
               },
               {
-                "fieldName": "approval_status",
-                "fieldValue": "rejected"
+                "columnName": "approval_status",
+                "columnValue": "rejected"
               }
             ]
           }
@@ -1081,15 +1119,15 @@
           "operation": "update",
           "tableName": "jobs",
           "rowId": "={{ $json.row_id }}",
-          "fieldsToSend": {
-            "values": [
+          "columnsUi": {
+            "columnValues": [
               {
-                "fieldName": "status",
-                "fieldValue": "revision_needed"
+                "columnName": "status",
+                "columnValue": "revision_needed"
               },
               {
-                "fieldName": "revision_feedback",
-                "fieldValue": "={{ $json.feedback }}"
+                "columnName": "revision_feedback",
+                "columnValue": "={{ $json.feedback }}"
               }
             ]
           }
