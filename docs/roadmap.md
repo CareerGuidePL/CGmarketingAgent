@@ -113,12 +113,13 @@ Po **I2–I3** warto **zatrzymać się** na ocenę, zanim doda się drogie model
 
 **Do rozwiązania — zarządzanie input vs feedback (Discord):**
 
-- **Problem:** Jeden kanał Discord jest czytany przez **ingest** (każda nowa wiadomość → potencjalnie nowy job) oraz przez orchestrator (**`sendAndWait`** na preview). Wiadomość z intencją *feedback do preview* może zostać zarejestrowana jako **nowy job**; równolegle harmonogram orchestratora uruchamia **osobne** wykonania niezależnie od stanu **Waiting** — powstaje pętla i gubiony kontekst HITL.
-- **Warianty rozwiązania (do wyboru lub łączenia):**
-  1. **Dodatkowy kanał** — osobny kanał tylko na nowe zlecenia (ingest) vs kanał wyłącznie pod preview i odpowiedzi operatora.
-  2. **Flagowanie wypowiedzi** — konwencja tekstu (prefiks), slash commands, albo reguły Discord (odpowiedź / wątek pod wiadomością bota), aby ingest **pomijał** wiadomości-traktowane-jako-feedback.
-  3. **Router AI (cienka warstwa)** — klasyfikacja intencji przed routingiem (`new_job` | `hitl_feedback` | `off_topic`); **nie** zastępuje n8n jako orchestratora — tylko wspiera routing; twarde reguły (np. reply pod botem) zostają pierwsze.
-- Szczegóły decyzyjne: [decisions-three-variants.md — § 4](decisions-three-variants.md).
+- **Problem:** Jeden kanał Discord jest czytany przez **ingest** oraz przez orchestrator (**`sendAndWait`** na preview). Wiadomość z intencją *feedback* mogła trafić jako **nowy job**; równolegle harmonogram orchestratora uruchamia **osobne** wykonania niezależnie od **Waiting**.
+- **Częściowo wdrożone (2026-04-08):** `cg-ingest-discord` — pomija **reply** (`message_reference`), zawsze **aktualizuje kursor** `discord_last_message_id` (ścieżka „tylko reply” → brak zapętlenia).
+- **Warianty dalsze (do wyboru lub łączenia):**
+  1. **Dodatkowy kanał** — ingest tylko na kanale zleceń vs preview/HITL osobno.
+  2. **Flagowanie** — prefiks / slash / reguły na wątek (dla feedbacku **bez** reply pod wiadomością).
+  3. **Router AI (cienka warstwa)** — klasyfikacja intencji; twarde reguły zostają pierwsze.
+- Szczegóły: [decisions-three-variants.md — § 4](decisions-three-variants.md).
 
 ---
 
@@ -294,3 +295,4 @@ Gdy będzie dostępna maszyna z działającymi workflow w n8n:
 | 1.3 | Start pracy z roadmapą: szkic `job`, szablon 3 wariantów, rejestr credentiali; status „w użyciu” |
 | 1.4 | Aktualizacja statusu iteracji (I0 done, I1 w toku); checklist: n8n działa, onboarding, wersjonowanie workflow w repo (`workflows/`, skrypty eksport/import) |
 | 1.5 | Stan n8n: orchestrator + gen-content + eksport 4 workflowów; Mark Generating / widok `to-process`; **otwarty temat:** input vs feedback na Discordzie (kanał / flagi / router AI) — [decisions-three-variants.md § 4](decisions-three-variants.md) |
+| 1.6 | Ingest Discord: pomijanie reply (`message_reference`), spójne przesuwanie `discord_last_message_id`; dokumentacja §4 / job-contract zaktualizowane |

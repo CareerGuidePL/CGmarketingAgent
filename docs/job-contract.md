@@ -99,7 +99,9 @@ Kolumna `channel_specs` z kontraktu JSON nie istnieje jeszcze w Seatable — do 
 
 #### Discord: rozdzielenie wejścia (nowy job) i feedbacku (HITL)
 
-Ingest Discord tworzy job z każdej nowej wiadomości spełniającej reguły (por. workflow `cg-ingest-discord`). Orchestrator może jednocześnie oczekiwać odpowiedzi na preview (**`sendAndWait`**). Przy **jednym kanale** wiadomość z intencją feedbacku może zostać błędnie zinterpretowana jako **nowe zlecenie**. **Do rozwiązania w I2:** osobny kanał, reguły (reply / wątek / prefiks / komendy) albo cienki router AI — opis wariantów: [roadmap.md](roadmap.md) (sekcja stanu), [decisions-three-variants.md § 4](decisions-three-variants.md).
+Ingest Discord tworzy job z każdej nowej wiadomości spełniającej reguły (por. workflow `cg-ingest-discord`). Orchestrator może jednocześnie oczekiwać odpowiedzi na preview (**`sendAndWait`**). Przy **jednym kanale** wiadomość z intencją feedbacku mogła zostać błędnie zinterpretowana jako **nowe zlecenie**.
+
+**Zaimplementowane w `cg-ingest-discord` (2026-04-08):** wiadomości z **`message_reference`** (reply w Discordzie) **nie** tworzą joba; kursor `discord_last_message_id` jest **zawsze** przesuwany do najwyższego ID spośród nowych wiadomości nie-botów (również gdy wszystkie to reply — brak zapętlenia ingestu). **Nadal otwarte:** zwykły post na kanale (bez reply) jako feedback — wtedy dalej rozważać drugi kanał, prefiks `[JOB]`, slash command lub router AI ([roadmap.md](roadmap.md), [decisions-three-variants.md § 4](decisions-three-variants.md)).
 
 ### Inne
 

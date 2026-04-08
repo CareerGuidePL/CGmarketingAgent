@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-07T20:30:17.345Z",
+  "updatedAt": "2026-04-08T14:43:20.068Z",
   "createdAt": "2026-04-07T15:21:29.716Z",
   "id": "z7FIfQqHzQGJW4ib",
   "name": "cg-gen-content",
@@ -83,8 +83,8 @@
       ],
       "credentials": {
         "googlePalmApi": {
-          "id": "oJ3pb8yUSbGS948v",
-          "name": "CG gemini"
+          "id": "d4oXIHXlor7dkMSp",
+          "name": "CG Google Gemini — dev"
         }
       }
     }
@@ -146,9 +146,9 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "cef2a206-3559-4ec6-8b5c-aa2b08872060",
-  "activeVersionId": "cef2a206-3559-4ec6-8b5c-aa2b08872060",
-  "versionCounter": 41,
+  "versionId": "e023079e-b019-4d3d-9587-f1f8accb1f7e",
+  "activeVersionId": "e023079e-b019-4d3d-9587-f1f8accb1f7e",
+  "versionCounter": 44,
   "triggerCount": 0,
   "shared": [
     {
@@ -171,9 +171,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-07T20:30:21.000Z",
-    "createdAt": "2026-04-07T20:30:17.346Z",
-    "versionId": "cef2a206-3559-4ec6-8b5c-aa2b08872060",
+    "updatedAt": "2026-04-08T14:43:23.000Z",
+    "createdAt": "2026-04-08T14:43:20.069Z",
+    "versionId": "e023079e-b019-4d3d-9587-f1f8accb1f7e",
     "workflowId": "z7FIfQqHzQGJW4ib",
     "nodes": [
       {
@@ -252,8 +252,8 @@
         ],
         "credentials": {
           "googlePalmApi": {
-            "id": "oJ3pb8yUSbGS948v",
-            "name": "CG gemini"
+            "id": "d4oXIHXlor7dkMSp",
+            "name": "CG Google Gemini — dev"
           }
         }
       }
@@ -305,15 +305,15 @@
       }
     },
     "authors": "Career Guide",
-    "name": "Version cef2a206",
+    "name": "Version e023079e",
     "description": "",
     "autosaved": true,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-07T20:30:21.340Z",
-        "id": 60,
+        "createdAt": "2026-04-08T14:43:23.767Z",
+        "id": 65,
         "workflowId": "z7FIfQqHzQGJW4ib",
-        "versionId": "cef2a206-3559-4ec6-8b5c-aa2b08872060",
+        "versionId": "e023079e-b019-4d3d-9587-f1f8accb1f7e",
         "event": "activated",
         "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
       }
