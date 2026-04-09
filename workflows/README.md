@@ -1,6 +1,6 @@
 # Workflows — n8n exports
 
-Eksporty workflow z n8n przechowywane w repozytorium (wersjonowanie przez git).
+Eksporty workflow z n8n przechowywane w repozytorium: **git** + opcjonalne **snapshoty** w `versions/` (szczegoly: [shared-rules.md sekcja 9](../docs/shared-rules.md)).
 
 **Stan na 2026-04-07:** w repo cztery workflowy zsynchronizowane z lokalną instancją: `cg-ingest-discord`, `cg-hitl-discord-reply`, `cg-orchestrator-main`, `cg-gen-content` (katalogi `ingest/`, `hitl/`, `orchestrator/`, `generate/`). Szczegóły przepływu i otwarte tematy (m.in. Discord input vs feedback): [roadmap.md](../docs/roadmap.md).
 
@@ -17,13 +17,14 @@ Eksporty workflow z n8n przechowywane w repozytorium (wersjonowanie przez git).
 | `memory/` | Pamiec operacyjna | `cg-memory-*` |
 | `scheduler/` | Planowanie, kalendarz | `cg-scheduler-*` |
 | `analytics/` | Statystyki, raporty | `cg-analytics-*` |
-| `_archive/` | Stare wersje (opcjonalnie) | — |
+| `_archive/` | Porzucone / bardzo stare (opcjonalnie) | — |
+
+W kazdym katalogu typu (np. `ingest/`) **glowny** plik `<nazwa>.json` to biezaca wersja (nadpisywana przez `n8n-export.sh`). **Snapshoty** zatwierdzonych wersji przed wiekszymi zmianami: `ingest/versions/<nazwa>/<etykieta>.json` (np. `2026-04-09-approved.json`). Pelna procedura: [shared-rules.md § 9](../docs/shared-rules.md).
 
 ## Konwencje
 
-- Nazwy plikow: `<nazwa-workflow-z-n8n>.json` (kebab-case)
-- Wersjonowanie: przez git — kazdy eksport = commit z opisem zmian
-- Nie numeruj wersji w nazwach plikow (historia git wystarczy)
+- Nazwy plikow (glowne): `<nazwa-workflow-z-n8n>.json` (kebab-case), jeden na workflow w danym katalogu typu
+- Historia: git na glownym pliku; kamienie milowe jako kopie w `versions/<slug>/`
 - **Nie eksportuj credentiali** — workflow JSON nie powinien zawierac sekretow
 
 ## Eksport / import

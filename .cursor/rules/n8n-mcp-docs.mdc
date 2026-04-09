@@ -52,7 +52,7 @@ Przy projektowaniu i edycji workflowów: **preferuj natywne** węzły n8n; **Cod
 
 ## 5. Wersjonowanie workflow
 
-Workflow eksportowane z n8n do `workflows/` (podkatalogi wg typu: `ingest/`, `orchestrator/`, `hitl/` itd.). Szczegóły: `docs/shared-rules.md` → sekcja 9. Skrypty: `scripts/n8n-export.sh`, `scripts/n8n-import.sh`.
+Workflow eksportowane z n8n do `workflows/<typ>/` (jeden glówny plik JSON na workflow). Snapshoty zatwierdzonych wersji przed większą zmianą: `workflows/<typ>/versions/<slug>/<etykieta>.json`. Szczegóły: `docs/shared-rules.md` → sekcja 9. Skrypty: `scripts/n8n-export.sh`, `scripts/n8n-import.sh`.
 
 ## 6. Wspólne zasady projektu
 

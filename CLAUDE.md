@@ -11,6 +11,8 @@ Wspólne reguły znajdują się w `docs/shared-rules.md` — **zawsze** stosuj j
 
 Projektowanie workflowów: **najpierw natywne węzły n8n**, dopiero potem Code / HTTP Request — pełna zasada w `docs/shared-rules.md` (sekcja 1 Architektura).
 
+Eksporty JSON do `workflows/` i snapshoty w `versions/`: **sekcja 9** w `docs/shared-rules.md`.
+
 @docs/shared-rules.md
 
 ## MCP: n8n

@@ -103,8 +103,8 @@ docker-compose.yml            # Lokalny n8n (Docker)
 scripts/
   n8n-export.sh               # Eksport workflow z n8n do repo
   n8n-import.sh               # Import workflow do n8n
-workflows/                    # Eksporty workflow JSON (wersjonowane w git)
-  ingest/                     # cg-ingest-*
+workflows/                    # Eksporty workflow JSON (git + snapshoty w versions/)
+  ingest/                     # cg-ingest-* (+ opcjonalnie versions/<slug>/)
   orchestrator/               # cg-orchestrator-*
   hitl/                       # cg-hitl-*
   generate/                   # cg-gen-*
@@ -113,17 +113,48 @@ workflows/                    # Eksporty workflow JSON (wersjonowane w git)
   memory/                     # cg-memory-*
   scheduler/                  # cg-scheduler-*
   analytics/                  # cg-analytics-*
-  _archive/                   # Stare wersje (opcjonalnie)
+  _archive/                   # Porzucone linie / bardzo stare (opcjonalnie)
 ```
 
 ## 9. Wersjonowanie workflow n8n
 
-- Workflow eksportowane z n8n jako JSON do `workflows/` — podkatalog wg typu (patrz sekcja 7).
-- Nazwy plikow: `<nazwa-workflow-z-n8n>.json` (kebab-case).
-- Wersjonowanie przez git (bez numeracji w nazwach plikow).
-- **Nie eksportuj credentiali** — skrypt `scripts/n8n-export.sh` automatycznie usuwa wartosci sekretow.
-- Po kazdej istotnej zmianie workflow: eksport + commit.
+### 9.1 Plik biezacy (eksport)
+
+- Jeden workflow = **jeden plik** w katalogu typu: `workflows/<typ>/<nazwa-workflow-z-n8n>.json` (kebab-case), np. `workflows/ingest/cg-ingest-discord.json`.
+- To jest **biezaca wersja** — `scripts/n8n-export.sh` **nadpisuje** ten plik przy eksporcie z instancji.
+- Historia drobnych zmian: **Git** (diff, revert).
+
+### 9.2 Snapshoty w katalogu typu (`versions/`)
+
+Gdy wersja jest **zatwierdzona** (review, dziala na stagingu / produkcji) i zaczynasz **nowa funkcjonalnosc albo duza przebudowe**:
+
+1. Upewnij sie, ze `workflows/<typ>/<slug>.json` odzwierciedla te zatwierdzona wersje (eksport z n8n jesli trzeba).
+2. Skopiuj ten plik do:
+   `workflows/<typ>/versions/<slug>/<etykieta>.json`
+   — `<slug>` = ta sama baza nazwy co plik bez `.json` (np. `cg-ingest-discord`).
+3. **Commit** snapshotu (np. `chore: snapshot cg-ingest-discord approved 2026-04-09`).
+4. Potem pracuj w n8n dalej; kolejne eksporty znowu aktualizuja wylacznie **glowny** `<slug>.json` w `workflows/<typ>/`.
+
+**Etykiety** (jeden spojny styl w zespole):
+
+- `YYYY-MM-DD-approved` — data zatwierdzenia
+- `v1`, `v2` — kamienie milowe
+- `pre-<krotki-opis>` — np. `pre-orchestrator-split`
+
+**Nie** trzymaj rownoleglych wersji jako wielu plikow **w rootcie** `workflows/<typ>/` (np. `foo-v1.json`, `foo-v2.json`) — koliduje z eksportem skryptem i z konwencja jeden workflow = jeden glowny plik.
+
+Opcjonalnie bardzo stare lub porzucone linie rozwoju przenos do `workflows/_archive/`.
+
+### 9.3 n8n: kopia robocza
+
+- Domyslnie edytujesz **ten sam** workflow w n8n; przywrocenie = Git albo import z `versions/<slug>/...`.
+- Gdy musisz **rownolegle** trzymac stara aktywna wersje w n8n: **Duplicate workflow** z tymczasowa nazwa (np. suffix `-wip`), po ustabilizowaniu scal nazewnictwo z powrotem do jednego workflowu i jednego pliku glownego w repo.
+
+### 9.4 Eksport credentiali i import
+
+- **Nie eksportuj wartosci credentiali** — `scripts/n8n-export.sh` usuwa sekrety (zostaja referencje).
 - Import na nowej instancji: `scripts/n8n-import.sh <plik.json>` lub reczny import w n8n UI.
+- Po kazdej istotnej zmianie workflow: eksport + commit glownego pliku; snapshot w `versions/` tylko przy **kamieniach milowych** (jak wyzej).
 
 ## 8. Git: branchy i commity
 
