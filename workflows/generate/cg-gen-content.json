@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-08T14:43:20.068Z",
+  "updatedAt": "2026-04-09T21:27:12.155Z",
   "createdAt": "2026-04-07T15:21:29.716Z",
   "id": "z7FIfQqHzQGJW4ib",
   "name": "cg-gen-content",
@@ -58,19 +58,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first().json;\nconst jobId = $('Build Prompt').first().json.job_id;\n\nreturn [{ json: {\n  job_id: jobId,\n  generated_text: item.text || item.output || JSON.stringify(item)\n} }];"
-      },
-      "id": "format-output",
-      "name": "Format Output",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        768,
-        0
-      ]
-    },
-    {
-      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite-preview",
         "options": {}
       },
       "id": "gemini",
@@ -87,6 +75,69 @@
           "name": "CG Google Gemini — dev"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst jobId = $('Build Prompt').first().json.job_id;\n\nreturn [{ json: {\n  job_id: jobId,\n  generated_text: item.text || item.output || JSON.stringify(item)\n} }];"
+      },
+      "id": "format-output",
+      "name": "Format Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst text = item.generated_text || '';\n\nconst lines = text.split('\\n').filter(l => l.trim());\nlet title = lines[0] || 'Career Guide';\nlet subtitle = lines.slice(1, 3).join(' ').substring(0, 120);\n\ntitle = title.replace(/^#+\\s*/, '').replace(/\\*\\*/g, '').substring(0, 80);\nsubtitle = subtitle.replace(/\\*\\*/g, '').replace(/^[-•]\\s*/, '');\n\nconst esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');\n\nconst css = `@import url(\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap\");:root{--cg-brand-primary:#4d96d9;--cg-brand-accent:#89c6eb;--cg-text-default:#1a1e32;--cg-text-muted:#667797;--cg-surface-page:#fcfcfe;--cg-matcher-cyan:#00acc1;--cg-matcher-purple:#8e44ad;--cg-matcher-pink:#d81b60}.cg-root.cg-dark{--cg-brand-primary:#8cb2e6;--cg-brand-accent:#a7dbff;--cg-text-default:#fbfbfd;--cg-text-muted:#a5afc8;--cg-surface-page:#161b2b}*,*::before,*::after{box-sizing:border-box}html,body{margin:0;padding:0;width:100%;height:100%;-webkit-font-smoothing:antialiased}body{font-family:\"Inter\",system-ui,sans-serif;font-size:18px;line-height:1.45;color:var(--cg-text-default);background:var(--cg-surface-page)}.cg-root{width:100%;height:100%;min-height:100%;color:var(--cg-text-default);background:var(--cg-surface-page)}.cg-layout{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:48px 56px;max-width:1200px;margin:0 auto;text-align:center}.cg-kicker{font-size:14px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--cg-brand-primary);margin:0 0 12px}.cg-title{font-size:44px;font-weight:700;line-height:1.15;color:var(--cg-text-default);margin:0 0 16px}.cg-subtitle{font-size:22px;font-weight:500;line-height:1.35;color:var(--cg-text-muted);margin:0;max-width:920px}.cg-rule{height:4px;width:120px;border-radius:999px;background:linear-gradient(90deg,var(--cg-matcher-cyan),var(--cg-matcher-purple),var(--cg-matcher-pink));margin:24px auto}`;\n\nconst html = `<div class=\"cg-root cg-dark\"><div class=\"cg-layout\"><p class=\"cg-kicker\">Career Guide</p><h1 class=\"cg-title\">${esc(title)}</h1><p class=\"cg-subtitle\">${esc(subtitle)}</p><div class=\"cg-rule\"></div></div></div>`;\n\nreturn [{ json: {\n  ...item,\n  image_html: html,\n  image_css: css\n} }];"
+      },
+      "id": "build-image-html",
+      "name": "Build Image HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://hcti-render:3000/render",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ html: $json.image_html, css: $json.image_css, width: 1200, height: 630, format: 'png' }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "render-image",
+      "name": "Render Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1216,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const imgItem = $input.first();\nconst prevData = $('Build Image HTML').first().json;\n\nreturn [{ json: {\n  job_id: prevData.job_id,\n  generated_text: prevData.generated_text\n}, binary: imgItem.binary }];"
+      },
+      "id": "final-output",
+      "name": "Final Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        0
+      ]
     }
   ],
   "connections": {
@@ -133,6 +184,39 @@
           }
         ]
       ]
+    },
+    "Format Output": {
+      "main": [
+        [
+          {
+            "node": "Build Image HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Image HTML": {
+      "main": [
+        [
+          {
+            "node": "Render Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render Image": {
+      "main": [
+        [
+          {
+            "node": "Final Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -146,9 +230,9 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "e023079e-b019-4d3d-9587-f1f8accb1f7e",
-  "activeVersionId": "e023079e-b019-4d3d-9587-f1f8accb1f7e",
-  "versionCounter": 44,
+  "versionId": "4ad99f86-e65c-4021-948b-6bf70d444779",
+  "activeVersionId": "4ad99f86-e65c-4021-948b-6bf70d444779",
+  "versionCounter": 60,
   "triggerCount": 0,
   "shared": [
     {
@@ -171,9 +255,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-08T14:43:23.000Z",
-    "createdAt": "2026-04-08T14:43:20.069Z",
-    "versionId": "e023079e-b019-4d3d-9587-f1f8accb1f7e",
+    "updatedAt": "2026-04-09T21:27:12.157Z",
+    "createdAt": "2026-04-09T21:27:12.157Z",
+    "versionId": "4ad99f86-e65c-4021-948b-6bf70d444779",
     "workflowId": "z7FIfQqHzQGJW4ib",
     "nodes": [
       {
@@ -227,19 +311,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const item = $input.first().json;\nconst jobId = $('Build Prompt').first().json.job_id;\n\nreturn [{ json: {\n  job_id: jobId,\n  generated_text: item.text || item.output || JSON.stringify(item)\n} }];"
-        },
-        "id": "format-output",
-        "name": "Format Output",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          768,
-          0
-        ]
-      },
-      {
-        "parameters": {
+          "modelName": "models/gemini-3.1-flash-lite-preview",
           "options": {}
         },
         "id": "gemini",
@@ -256,6 +328,69 @@
             "name": "CG Google Gemini — dev"
           }
         }
+      },
+      {
+        "parameters": {
+          "jsCode": "const item = $input.first().json;\nconst jobId = $('Build Prompt').first().json.job_id;\n\nreturn [{ json: {\n  job_id: jobId,\n  generated_text: item.text || item.output || JSON.stringify(item)\n} }];"
+        },
+        "id": "format-output",
+        "name": "Format Output",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          768,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const item = $input.first().json;\nconst text = item.generated_text || '';\n\nconst lines = text.split('\\n').filter(l => l.trim());\nlet title = lines[0] || 'Career Guide';\nlet subtitle = lines.slice(1, 3).join(' ').substring(0, 120);\n\ntitle = title.replace(/^#+\\s*/, '').replace(/\\*\\*/g, '').substring(0, 80);\nsubtitle = subtitle.replace(/\\*\\*/g, '').replace(/^[-•]\\s*/, '');\n\nconst esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');\n\nconst css = `@import url(\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap\");:root{--cg-brand-primary:#4d96d9;--cg-brand-accent:#89c6eb;--cg-text-default:#1a1e32;--cg-text-muted:#667797;--cg-surface-page:#fcfcfe;--cg-matcher-cyan:#00acc1;--cg-matcher-purple:#8e44ad;--cg-matcher-pink:#d81b60}.cg-root.cg-dark{--cg-brand-primary:#8cb2e6;--cg-brand-accent:#a7dbff;--cg-text-default:#fbfbfd;--cg-text-muted:#a5afc8;--cg-surface-page:#161b2b}*,*::before,*::after{box-sizing:border-box}html,body{margin:0;padding:0;width:100%;height:100%;-webkit-font-smoothing:antialiased}body{font-family:\"Inter\",system-ui,sans-serif;font-size:18px;line-height:1.45;color:var(--cg-text-default);background:var(--cg-surface-page)}.cg-root{width:100%;height:100%;min-height:100%;color:var(--cg-text-default);background:var(--cg-surface-page)}.cg-layout{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:48px 56px;max-width:1200px;margin:0 auto;text-align:center}.cg-kicker{font-size:14px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--cg-brand-primary);margin:0 0 12px}.cg-title{font-size:44px;font-weight:700;line-height:1.15;color:var(--cg-text-default);margin:0 0 16px}.cg-subtitle{font-size:22px;font-weight:500;line-height:1.35;color:var(--cg-text-muted);margin:0;max-width:920px}.cg-rule{height:4px;width:120px;border-radius:999px;background:linear-gradient(90deg,var(--cg-matcher-cyan),var(--cg-matcher-purple),var(--cg-matcher-pink));margin:24px auto}`;\n\nconst html = `<div class=\"cg-root cg-dark\"><div class=\"cg-layout\"><p class=\"cg-kicker\">Career Guide</p><h1 class=\"cg-title\">${esc(title)}</h1><p class=\"cg-subtitle\">${esc(subtitle)}</p><div class=\"cg-rule\"></div></div></div>`;\n\nreturn [{ json: {\n  ...item,\n  image_html: html,\n  image_css: css\n} }];"
+        },
+        "id": "build-image-html",
+        "name": "Build Image HTML",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          992,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://hcti-render:3000/render",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ html: $json.image_html, css: $json.image_css, width: 1200, height: 630, format: 'png' }) }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "id": "render-image",
+        "name": "Render Image",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1216,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const imgItem = $input.first();\nconst prevData = $('Build Image HTML').first().json;\n\nreturn [{ json: {\n  job_id: prevData.job_id,\n  generated_text: prevData.generated_text\n}, binary: imgItem.binary }];"
+        },
+        "id": "final-output",
+        "name": "Final Output",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1440,
+          0
+        ]
       }
     ],
     "connections": {
@@ -302,19 +437,60 @@
             }
           ]
         ]
+      },
+      "Format Output": {
+        "main": [
+          [
+            {
+              "node": "Build Image HTML",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Image HTML": {
+        "main": [
+          [
+            {
+              "node": "Render Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Render Image": {
+        "main": [
+          [
+            {
+              "node": "Final Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Career Guide",
-    "name": "Version e023079e",
-    "description": "",
-    "autosaved": true,
+    "name": null,
+    "description": null,
+    "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-08T14:43:23.767Z",
-        "id": 65,
+        "createdAt": "2026-04-09T21:27:12.229Z",
+        "id": 93,
         "workflowId": "z7FIfQqHzQGJW4ib",
-        "versionId": "e023079e-b019-4d3d-9587-f1f8accb1f7e",
+        "versionId": "4ad99f86-e65c-4021-948b-6bf70d444779",
         "event": "activated",
+        "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      },
+      {
+        "createdAt": "2026-04-09T21:27:12.202Z",
+        "id": 92,
+        "workflowId": "z7FIfQqHzQGJW4ib",
+        "versionId": "4ad99f86-e65c-4021-948b-6bf70d444779",
+        "event": "deactivated",
         "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
       }
     ]
