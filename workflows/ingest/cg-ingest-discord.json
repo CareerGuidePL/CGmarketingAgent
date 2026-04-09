@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-08T14:45:49.237Z",
+  "updatedAt": "2026-04-09T19:00:36.685Z",
   "createdAt": "2026-04-06T16:54:48.448Z",
   "id": "MvyZHtercUEd3cVb",
   "name": "cg-ingest-discord",
@@ -12,7 +12,8 @@
         "rule": {
           "interval": [
             {
-              "field": "minutes"
+              "field": "minutes",
+              "minutesInterval": 2
             }
           ]
         }
@@ -24,8 +25,7 @@
       "position": [
         0,
         0
-      ],
-      "disabled": false
+      ]
     },
     {
       "parameters": {
@@ -84,14 +84,14 @@
     },
     {
       "parameters": {
-        "jsCode": "// Get last processed message ID from SeaTable config\nconst configItems = $('Get Last Message ID').all();\nconst lastId = configItems.length > 0 ? configItems[0].json.value : '0';\n\n// Get Discord messages\nconst messages = $('Discord Get Messages').all();\n\n// All new non-bot messages after lastId (cursor must advance past all of these)\nconst newer = messages.filter((msg) => {\n  const msgId = msg.json.id;\n  const isBot = msg.json.author?.bot === true;\n  return BigInt(msgId) > BigInt(lastId) && !isBot;\n});\n\nif (newer.length === 0) {\n  return [];\n}\n\n// Oldest first\nnewer.sort((a, b) => Number(BigInt(a.json.id) - BigInt(b.json.id)));\n\nconst maxCursor = newer[newer.length - 1].json.id;\n\n// Replies (message_reference) = feedback / thread context — do not create a new job\nconst toIngest = newer.filter((msg) => !msg.json.message_reference);\n\nfunction uuid() {\n  return \"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx\".replace(/[xy]/g, (c) => {\n    const r = (Math.random() * 16) | 0;\n    const v = c === \"x\" ? r : (r & 0x3) | 0x8;\n    return v.toString(16);\n  });\n}\n\nif (toIngest.length === 0) {\n  return [{ json: { cursor_only: true, _cursor_max_id: maxCursor } }];\n}\n\nreturn toIngest.map((msg) => ({\n  json: {\n    job_id: uuid(),\n    discord_msg_id: msg.json.id,\n    source: \"discord\",\n    content_type: \"post\",\n    raw_text: msg.json.content || \"\",\n    author: msg.json.author?.username || \"unknown\",\n    assets: JSON.stringify(\n      (msg.json.attachments || []).map((a) => ({\n        kind: a.content_type?.startsWith(\"image\") ? \"image\" : \"file\",\n        url: a.url,\n        filename: a.filename,\n      })),\n    ),\n    approval_status: \"pending\",\n    status: \"ingested\",\n    created_at: msg.json.timestamp,\n    _cursor_max_id: maxCursor,\n  },\n}));"
+        "jsCode": "const configItems = $('Get Last Message ID').all();\nconst lastId = configItems.length > 0 ? configItems[0].json.value : '0';\nconst messages = $('Discord Get Messages').all();\n\nconst newer = messages.filter((msg) => {\n  return BigInt(msg.json.id) > BigInt(lastId) && !msg.json.author?.bot;\n});\n\nif (newer.length === 0) return [];\n\nnewer.sort((a, b) => Number(BigInt(a.json.id) - BigInt(b.json.id)));\nconst maxCursor = newer[newer.length - 1].json.id;\nconst toIngest = newer.filter((msg) => !msg.json.message_reference);\n\nfunction uuid() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {\n    const r = (Math.random() * 16) | 0;\n    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);\n  });\n}\n\nif (toIngest.length === 0) {\n  return [{ json: { cursor_only: true, _cursor_max_id: maxCursor } }];\n}\n\nreturn toIngest.map((msg) => {\n  const attachments = (msg.json.attachments || []).map((a) => ({\n    kind: a.content_type?.startsWith('image') ? 'image' : a.content_type?.startsWith('video') ? 'video' : 'file',\n    url: a.url,\n    filename: a.filename,\n    content_type: a.content_type || '',\n    drive_file_id: null,\n  }));\n  const first = attachments[0] || null;\n  return {\n    json: {\n      job_id: uuid(),\n      discord_msg_id: msg.json.id,\n      source: 'discord',\n      content_type: 'post',\n      raw_text: msg.json.content || '',\n      author: msg.json.author?.username || 'unknown',\n      assets: JSON.stringify(attachments),\n      approval_status: 'pending',\n      status: 'ingested',\n      created_at: msg.json.timestamp,\n      _cursor_max_id: maxCursor,\n      _attachment_url: first ? first.url : '',\n      _attachment_filename: first ? first.filename : '',\n    },\n  };\n});"
       },
       "id": "filter-new",
       "name": "Filter New Messages",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        672,
+        640,
         0
       ]
     },
@@ -124,14 +124,12 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        800,
+        816,
         0
       ]
     },
     {
       "parameters": {
-        "resource": "row",
-        "operation": "create",
         "tableName": "jobs",
         "columnsUi": {
           "columnValues": [
@@ -179,8 +177,8 @@
       "type": "n8n-nodes-base.seaTable",
       "typeVersion": 2,
       "position": [
-        880,
-        0
+        992,
+        128
       ],
       "credentials": {
         "seaTableApi": {
@@ -208,9 +206,116 @@
       "type": "n8n-nodes-base.seaTable",
       "typeVersion": 2,
       "position": [
-        1104,
-        0
+        1152,
+        -16
       ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "id": "if-has-attachment",
+      "name": "IF Has Attachment",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        128
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $('Filter New Messages').item.json._attachment_url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "download-attachment",
+      "name": "Download Attachment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1344,
+        64
+      ],
+      "parameters": {
+        "url": "={{ $('Filter New Messages').item.json._attachment_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "upload-to-drive",
+      "name": "Upload to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1536,
+        64
+      ],
+      "parameters": {
+        "operation": "upload",
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1NsI1Cjg4sDIAijYEXfygshA7p3kqfpv9"
+        },
+        "name": "={{ $('Filter New Messages').item.json.job_id + '_' + $('Filter New Messages').item.json._attachment_filename }}",
+        "options": {}
+      },
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "js6W5HNGMgoA1GC0",
+          "name": "n8n Google Drive"
+        }
+      }
+    },
+    {
+      "id": "update-job-assets",
+      "name": "Update Job Assets",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        64
+      ],
+      "parameters": {
+        "operation": "update",
+        "tableName": "jobs",
+        "rowId": "={{ $('SeaTable Create Job').item.json._id }}",
+        "columnsUi": {
+          "columnValues": [
+            {
+              "columnName": "assets",
+              "columnValue": "={{ JSON.stringify([{ kind: $('Filter New Messages').item.json._attachment_filename.match(/\\.(jpg|jpeg|png|gif|webp)$/i) ? 'image' : 'file', url: $('Filter New Messages').item.json._attachment_url, filename: $('Filter New Messages').item.json._attachment_filename, drive_file_id: $json.id }]) }}"
+            }
+          ]
+        }
+      },
       "credentials": {
         "seaTableApi": {
           "id": "hW2f85Vn1TyCow3D",
@@ -264,17 +369,6 @@
         ]
       ]
     },
-    "SeaTable Create Job": {
-      "main": [
-        [
-          {
-            "node": "Update Last Message ID",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "IF Cursor Only (skip job)": {
       "main": [
         [
@@ -287,6 +381,68 @@
         [
           {
             "node": "SeaTable Create Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SeaTable Create Job": {
+      "main": [
+        [
+          {
+            "node": "IF Has Attachment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Has Attachment": {
+      "main": [
+        [
+          {
+            "node": "Download Attachment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Last Message ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Attachment": {
+      "main": [
+        [
+          {
+            "node": "Upload to Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Drive": {
+      "main": [
+        [
+          {
+            "node": "Update Job Assets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Job Assets": {
+      "main": [
+        [
+          {
+            "node": "Update Last Message ID",
             "type": "main",
             "index": 0
           }
@@ -312,9 +468,9 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "def0903f-e701-4984-9f2a-d94afb0c250f",
-  "activeVersionId": "def0903f-e701-4984-9f2a-d94afb0c250f",
-  "versionCounter": 23,
+  "versionId": "231412c2-8ee2-4f96-b557-19d6af8e6dcd",
+  "activeVersionId": "231412c2-8ee2-4f96-b557-19d6af8e6dcd",
+  "versionCounter": 47,
   "triggerCount": 1,
   "shared": [
     {
@@ -337,9 +493,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-08T14:45:49.238Z",
-    "createdAt": "2026-04-08T14:45:49.238Z",
-    "versionId": "def0903f-e701-4984-9f2a-d94afb0c250f",
+    "updatedAt": "2026-04-09T19:00:36.688Z",
+    "createdAt": "2026-04-09T19:00:36.688Z",
+    "versionId": "231412c2-8ee2-4f96-b557-19d6af8e6dcd",
     "workflowId": "MvyZHtercUEd3cVb",
     "nodes": [
       {
@@ -347,7 +503,8 @@
           "rule": {
             "interval": [
               {
-                "field": "minutes"
+                "field": "minutes",
+                "minutesInterval": 2
               }
             ]
           }
@@ -359,8 +516,7 @@
         "position": [
           0,
           0
-        ],
-        "disabled": false
+        ]
       },
       {
         "parameters": {
@@ -419,14 +575,14 @@
       },
       {
         "parameters": {
-          "jsCode": "// Get last processed message ID from SeaTable config\nconst configItems = $('Get Last Message ID').all();\nconst lastId = configItems.length > 0 ? configItems[0].json.value : '0';\n\n// Get Discord messages\nconst messages = $('Discord Get Messages').all();\n\n// All new non-bot messages after lastId (cursor must advance past all of these)\nconst newer = messages.filter((msg) => {\n  const msgId = msg.json.id;\n  const isBot = msg.json.author?.bot === true;\n  return BigInt(msgId) > BigInt(lastId) && !isBot;\n});\n\nif (newer.length === 0) {\n  return [];\n}\n\n// Oldest first\nnewer.sort((a, b) => Number(BigInt(a.json.id) - BigInt(b.json.id)));\n\nconst maxCursor = newer[newer.length - 1].json.id;\n\n// Replies (message_reference) = feedback / thread context — do not create a new job\nconst toIngest = newer.filter((msg) => !msg.json.message_reference);\n\nfunction uuid() {\n  return \"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx\".replace(/[xy]/g, (c) => {\n    const r = (Math.random() * 16) | 0;\n    const v = c === \"x\" ? r : (r & 0x3) | 0x8;\n    return v.toString(16);\n  });\n}\n\nif (toIngest.length === 0) {\n  return [{ json: { cursor_only: true, _cursor_max_id: maxCursor } }];\n}\n\nreturn toIngest.map((msg) => ({\n  json: {\n    job_id: uuid(),\n    discord_msg_id: msg.json.id,\n    source: \"discord\",\n    content_type: \"post\",\n    raw_text: msg.json.content || \"\",\n    author: msg.json.author?.username || \"unknown\",\n    assets: JSON.stringify(\n      (msg.json.attachments || []).map((a) => ({\n        kind: a.content_type?.startsWith(\"image\") ? \"image\" : \"file\",\n        url: a.url,\n        filename: a.filename,\n      })),\n    ),\n    approval_status: \"pending\",\n    status: \"ingested\",\n    created_at: msg.json.timestamp,\n    _cursor_max_id: maxCursor,\n  },\n}));"
+          "jsCode": "const configItems = $('Get Last Message ID').all();\nconst lastId = configItems.length > 0 ? configItems[0].json.value : '0';\nconst messages = $('Discord Get Messages').all();\n\nconst newer = messages.filter((msg) => {\n  return BigInt(msg.json.id) > BigInt(lastId) && !msg.json.author?.bot;\n});\n\nif (newer.length === 0) return [];\n\nnewer.sort((a, b) => Number(BigInt(a.json.id) - BigInt(b.json.id)));\nconst maxCursor = newer[newer.length - 1].json.id;\nconst toIngest = newer.filter((msg) => !msg.json.message_reference);\n\nfunction uuid() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {\n    const r = (Math.random() * 16) | 0;\n    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);\n  });\n}\n\nif (toIngest.length === 0) {\n  return [{ json: { cursor_only: true, _cursor_max_id: maxCursor } }];\n}\n\nreturn toIngest.map((msg) => {\n  const attachments = (msg.json.attachments || []).map((a) => ({\n    kind: a.content_type?.startsWith('image') ? 'image' : a.content_type?.startsWith('video') ? 'video' : 'file',\n    url: a.url,\n    filename: a.filename,\n    content_type: a.content_type || '',\n    drive_file_id: null,\n  }));\n  const first = attachments[0] || null;\n  return {\n    json: {\n      job_id: uuid(),\n      discord_msg_id: msg.json.id,\n      source: 'discord',\n      content_type: 'post',\n      raw_text: msg.json.content || '',\n      author: msg.json.author?.username || 'unknown',\n      assets: JSON.stringify(attachments),\n      approval_status: 'pending',\n      status: 'ingested',\n      created_at: msg.json.timestamp,\n      _cursor_max_id: maxCursor,\n      _attachment_url: first ? first.url : '',\n      _attachment_filename: first ? first.filename : '',\n    },\n  };\n});"
         },
         "id": "filter-new",
         "name": "Filter New Messages",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          672,
+          640,
           0
         ]
       },
@@ -459,14 +615,12 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
         "position": [
-          800,
+          816,
           0
         ]
       },
       {
         "parameters": {
-          "resource": "row",
-          "operation": "create",
           "tableName": "jobs",
           "columnsUi": {
             "columnValues": [
@@ -514,8 +668,8 @@
         "type": "n8n-nodes-base.seaTable",
         "typeVersion": 2,
         "position": [
-          880,
-          0
+          992,
+          128
         ],
         "credentials": {
           "seaTableApi": {
@@ -543,9 +697,116 @@
         "type": "n8n-nodes-base.seaTable",
         "typeVersion": 2,
         "position": [
-          1104,
-          0
+          1152,
+          -16
         ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "id": "if-has-attachment",
+        "name": "IF Has Attachment",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1152,
+          128
+        ],
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $('Filter New Messages').item.json._attachment_url }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "download-attachment",
+        "name": "Download Attachment",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1344,
+          64
+        ],
+        "parameters": {
+          "url": "={{ $('Filter New Messages').item.json._attachment_url }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "upload-to-drive",
+        "name": "Upload to Drive",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          1536,
+          64
+        ],
+        "parameters": {
+          "operation": "upload",
+          "folderId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "1NsI1Cjg4sDIAijYEXfygshA7p3kqfpv9"
+          },
+          "name": "={{ $('Filter New Messages').item.json.job_id + '_' + $('Filter New Messages').item.json._attachment_filename }}",
+          "options": {}
+        },
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "js6W5HNGMgoA1GC0",
+            "name": "n8n Google Drive"
+          }
+        }
+      },
+      {
+        "id": "update-job-assets",
+        "name": "Update Job Assets",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          1728,
+          64
+        ],
+        "parameters": {
+          "operation": "update",
+          "tableName": "jobs",
+          "rowId": "={{ $('SeaTable Create Job').item.json._id }}",
+          "columnsUi": {
+            "columnValues": [
+              {
+                "columnName": "assets",
+                "columnValue": "={{ JSON.stringify([{ kind: $('Filter New Messages').item.json._attachment_filename.match(/\\.(jpg|jpeg|png|gif|webp)$/i) ? 'image' : 'file', url: $('Filter New Messages').item.json._attachment_url, filename: $('Filter New Messages').item.json._attachment_filename, drive_file_id: $json.id }]) }}"
+              }
+            ]
+          }
+        },
         "credentials": {
           "seaTableApi": {
             "id": "hW2f85Vn1TyCow3D",
@@ -599,17 +860,6 @@
           ]
         ]
       },
-      "SeaTable Create Job": {
-        "main": [
-          [
-            {
-              "node": "Update Last Message ID",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "IF Cursor Only (skip job)": {
         "main": [
           [
@@ -627,6 +877,68 @@
             }
           ]
         ]
+      },
+      "SeaTable Create Job": {
+        "main": [
+          [
+            {
+              "node": "IF Has Attachment",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF Has Attachment": {
+        "main": [
+          [
+            {
+              "node": "Download Attachment",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Update Last Message ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Attachment": {
+        "main": [
+          [
+            {
+              "node": "Upload to Drive",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload to Drive": {
+        "main": [
+          [
+            {
+              "node": "Update Job Assets",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Job Assets": {
+        "main": [
+          [
+            {
+              "node": "Update Last Message ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Career Guide",
@@ -635,18 +947,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-08T14:45:49.308Z",
-        "id": 67,
+        "createdAt": "2026-04-09T19:00:36.785Z",
+        "id": 89,
         "workflowId": "MvyZHtercUEd3cVb",
-        "versionId": "def0903f-e701-4984-9f2a-d94afb0c250f",
+        "versionId": "231412c2-8ee2-4f96-b557-19d6af8e6dcd",
         "event": "activated",
         "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
       },
       {
-        "createdAt": "2026-04-08T14:45:49.277Z",
-        "id": 66,
+        "createdAt": "2026-04-09T19:00:36.752Z",
+        "id": 88,
         "workflowId": "MvyZHtercUEd3cVb",
-        "versionId": "def0903f-e701-4984-9f2a-d94afb0c250f",
+        "versionId": "231412c2-8ee2-4f96-b557-19d6af8e6dcd",
         "event": "deactivated",
         "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
       }

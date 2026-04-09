@@ -91,8 +91,8 @@ Zamiast realizować wszystkie fazy naraz — **krótkie iteracje**, przyrost dzi
 | Iteracja | Zakres | Status |
 |----------|--------|--------|
 | **I0** | Faza 0: lokalne n8n, konwencje, `.env`; opcjonalnie tunel | **done** — Docker, `.env.example`, onboarding, konwencje git, reguły IDE |
-| **I1** | Faza 1–2: credential'e, kontrakt `job`, jedno wejście (Discord) + Seatable/Drive | **w toku** — kontrakt `job` (szkic), rejestr credentiali, Seatable; w n8n i repo: `cg-ingest-discord`, `cg-hitl-discord-reply`; API n8n + eksport workflowów do `workflows/` |
-| **I2** | Faza 3: ingest → orchestrator → HITL lub tania generacja tekstu | **w toku (częściowo)** — `cg-orchestrator-main` + `cg-gen-content` (Gemini), HITL przez Discord `sendAndWait` (odpowiedź w tekście, parsowanie działa); **do domknięcia:** spójne widoki `to-process` w Seatable, ograniczenie równoległych runów schedulera względem **Waiting**; opcjonalnie twardszy rozdział **input vs feedback** (drugi kanał / reguły — patrz [decisions-three-variants.md § 4](decisions-three-variants.md)) |
+| **I1** | Faza 1–2: credential'e, kontrakt `job`, jedno wejście (Discord) + Seatable/Drive | **done** — kontrakt `job`, rejestr credentiali, Seatable; w n8n i repo: `cg-ingest-discord`, `cg-hitl-discord-reply`; API n8n + eksport workflowów do `workflows/` |
+| **I2** | Faza 3: ingest → orchestrator → HITL lub tania generacja tekstu | **done** — `cg-orchestrator-main` + `cg-gen-content` (Gemini), HITL przez Discord `sendAndWait`, widok `to-process` w Seatable (filtr na `ingested`/`revision_needed`), `concurrency: 1` w orchestratorze (brak równoległych runów); opcjonalnie twardszy rozdział **input vs feedback** (drugi kanał / reguły — patrz [decisions-three-variants.md § 4](decisions-three-variants.md)) |
 | **I3** | Jeden kanał social; scheduler w wersji minimalnej (np. ręczny trigger) | planned |
 | **I4+** | Faza 4 (agent, HTCI, pamięć), pełny scheduler, kolejne kanały, Faza 6 | planned |
 

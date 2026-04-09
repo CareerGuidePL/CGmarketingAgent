@@ -93,9 +93,24 @@ Widoki: `Default View`, **`to-process`** — używany przez `cg-orchestrator-mai
 | `key` | Text |
 | `value` | Text |
 
-#### Uwaga: `channel_specs`
+#### Tabela `channel_specs` — szablony treści per kanał social
 
-Kolumna `channel_specs` z kontraktu JSON nie istnieje jeszcze w Seatable — do dodania gdy pojawi się potrzeba (I2+).
+| Kolumna | Typ | Opis |
+|---|---|---|
+| `channel` | Text | Nazwa kanału: `facebook`, `linkedin`, `instagram`, `x`, `youtube`, `tiktok` |
+| `language` | Single Select | Język treści: `pl`, `en`, `pl+en` |
+| `tone` | Text | Ton i styl komunikacji |
+| `max_length` | Number | Max długość tekstu (znaki) |
+| `post_structure` | Long Text | Struktura posta (hook → rozwinięcie → CTA → hashtagi) |
+| `hashtag_count` | Text | Zakres liczby hashtagów (np. `3-5`) |
+| `emoji_style` | Single Select | Użycie emoji: `tak`, `umiarkowanie`, `opcjonalnie` |
+| `cta_style` | Text | Typ wezwania do działania |
+| `media_required` | Checkbox | Czy media są wymagane |
+| `media_types` | Text | Akceptowane typy mediów |
+| `visual_template_id` | Text | ID szablonu wizualnego (HCTI) — do wypełnienia później |
+| `notes` | Long Text | Uwagi dot. algorytmu / best practices |
+
+Workflow `cg-gen-content` powinien pobierać spec dla danego kanału z tej tabeli i budować prompt z uwzględnieniem tonu, struktury i limitów.
 
 #### Discord: rozdzielenie wejścia (nowy job) i feedbacku (HITL)
 

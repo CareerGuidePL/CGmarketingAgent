@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-07T21:06:41.314Z",
+  "updatedAt": "2026-04-09T16:34:50.624Z",
   "createdAt": "2026-04-07T18:41:18.859Z",
   "id": "ov4KpAcVoAuWnEPT",
   "name": "cg-orchestrator-main",
@@ -688,9 +688,9 @@
   },
   "meta": null,
   "pinData": {},
-  "versionId": "274bb554-10f3-441c-8865-9002f3eb40d8",
-  "activeVersionId": "274bb554-10f3-441c-8865-9002f3eb40d8",
-  "versionCounter": 32,
+  "versionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
+  "activeVersionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
+  "versionCounter": 57,
   "triggerCount": 1,
   "shared": [
     {
@@ -713,9 +713,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-07T21:07:41.000Z",
-    "createdAt": "2026-04-07T21:06:41.315Z",
-    "versionId": "274bb554-10f3-441c-8865-9002f3eb40d8",
+    "updatedAt": "2026-04-08T22:11:21.434Z",
+    "createdAt": "2026-04-08T22:11:21.434Z",
+    "versionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
     "workflowId": "ov4KpAcVoAuWnEPT",
     "nodes": [
       {
@@ -895,15 +895,15 @@
           "operation": "update",
           "tableName": "jobs",
           "rowId": "={{ $('Search Row ID').first().json._id }}",
-          "fieldsToSend": {
-            "values": [
+          "columnsUi": {
+            "columnValues": [
               {
-                "fieldName": "generated_text",
-                "fieldValue": "={{ $json.generated_text }}"
+                "columnName": "generated_text",
+                "columnValue": "={{ $json.generated_text }}"
               },
               {
-                "fieldName": "status",
-                "fieldValue": "awaiting_approval"
+                "columnName": "status",
+                "columnValue": "awaiting_approval"
               }
             ]
           }
@@ -1387,16 +1387,40 @@
       }
     },
     "authors": "Career Guide",
-    "name": "Version 274bb554",
-    "description": "",
-    "autosaved": true,
+    "name": null,
+    "description": null,
+    "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-07T21:07:41.152Z",
-        "id": 63,
+        "createdAt": "2026-04-08T22:11:21.519Z",
+        "id": 83,
         "workflowId": "ov4KpAcVoAuWnEPT",
-        "versionId": "274bb554-10f3-441c-8865-9002f3eb40d8",
+        "versionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
         "event": "activated",
+        "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      },
+      {
+        "createdAt": "2026-04-09T16:34:50.711Z",
+        "id": 85,
+        "workflowId": "ov4KpAcVoAuWnEPT",
+        "versionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
+        "event": "activated",
+        "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      },
+      {
+        "createdAt": "2026-04-08T22:11:21.483Z",
+        "id": 82,
+        "workflowId": "ov4KpAcVoAuWnEPT",
+        "versionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
+        "event": "deactivated",
+        "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
+      },
+      {
+        "createdAt": "2026-04-09T16:34:50.683Z",
+        "id": 84,
+        "workflowId": "ov4KpAcVoAuWnEPT",
+        "versionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
+        "event": "deactivated",
         "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
       }
     ]
