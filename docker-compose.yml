@@ -44,5 +44,14 @@ services:
       # W kontenerze nadal 4040 (interfejs agenta). Na hoście 4041 — lokalny ngrok często trzyma już :4040.
       - "127.0.0.1:4041:4040"
 
+  # Self-hosted HTML/CSS to Image renderer (replaces hcti.io).
+  # Internal only — not exposed to the internet. n8n calls http://hcti-render:3000/render
+  hcti-render:
+    build: ./services/hcti-render
+    restart: unless-stopped
+    environment:
+      PORT: "3000"
+    # No ports exposed to host — accessible only within Docker network
+
 volumes:
   n8n_data:

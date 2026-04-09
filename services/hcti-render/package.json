@@ -1,0 +1,13 @@
+{
+  "name": "hcti-render",
+  "version": "1.0.0",
+  "description": "Self-hosted HTML/CSS to Image renderer (Puppeteer)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "puppeteer": "^23.0.0"
+  }
+}

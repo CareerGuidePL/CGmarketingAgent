@@ -1,0 +1,302 @@
+/**
+ * Career Guide — style do generacji obrazów (hcti-render / n8n HTTP Request)
+ *
+ * URL: POST http://hcti-render:3000/render
+ *
+ * Przykład body (JSON) — pole "css": wklej CAŁĄ treść tego pliku (jedna linia
+ * lub string wieloliniowy zależnie od klienta), albo wczytaj plik w Code node
+ * i przekaż do HTTP Request.
+ *
+ * {
+ *   "html": "<div class=\"cg-root cg-dark\"><div class=\"cg-layout cg-layout--center\"><p class=\"cg-kicker\">Career Guide</p><h1 class=\"cg-title\">Nagłówek</h1><p class=\"cg-subtitle\">Krótki opis pod kątem 1200×630.</p><div class=\"cg-rule\"></div></div></div>",
+ *   "css": "...treść career-guide-render.css...",
+ *   "width": 1200,
+ *   "height": 630,
+ *   "format": "png"
+ * }
+ *
+ * Motyw: .cg-root — jasny domyślnie; dodaj .cg-dark dla dark mode (tokeny jak w appce).
+ *
+ * Źródło tokenów: career-guide/frontend/tailwind.config.js + index.css (skrócone pod raster).
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+/* ─── Design tokens (light) ─── */
+:root {
+  --cg-brand-primary: #4d96d9;
+  --cg-brand-accent: #89c6eb;
+  --cg-brand-secondary: #89c6eb;
+  --cg-semantic-error: #c83c2d;
+
+  --cg-text-default: #1a1e32;
+  --cg-text-dark: #1a1e32;
+  --cg-text-muted: #667797;
+
+  --cg-surface-page: #fcfcfe;
+  --cg-surface-card: #ffffff;
+  --cg-surface-muted: #f2f3f8;
+  --cg-surface-alt: #f6f6f9;
+
+  --cg-border-default: #e0e1e8;
+  --cg-border-light: #f2f3f8;
+
+  /* Matcher palette */
+  --cg-matcher-cyan: #00acc1;
+  --cg-matcher-coral: #ff7043;
+  --cg-matcher-purple: #8e44ad;
+  --cg-matcher-emerald: #00897b;
+  --cg-matcher-yellow: #ffc107;
+  --cg-matcher-pink: #d81b60;
+  --cg-matcher-blue: #2196f3;
+  --cg-matcher-orange: #f57c00;
+
+  --cg-accent-legacy: #8b5cf6;
+}
+
+/* ─── Dark theme (dodaj klasę .cg-dark na .cg-root) ─── */
+.cg-root.cg-dark {
+  --cg-brand-primary: #8cb2e6;
+  --cg-brand-accent: #a7dbff;
+  --cg-brand-secondary: #262f4d;
+  --cg-semantic-error: #78281e;
+
+  --cg-text-default: #fbfbfd;
+  --cg-text-dark: #fbfbfd;
+  --cg-text-muted: #a5afc8;
+
+  --cg-surface-page: #161b2b;
+  --cg-surface-card: #1e2439;
+  --cg-surface-muted: #262f4d;
+  --cg-surface-alt: #262f4d;
+
+  --cg-border-default: #2f3b5c;
+  --cg-border-light: #415180;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Reset pod renderer (PNG 1200×630 itp.) */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.45;
+  color: var(--cg-text-default);
+  background: var(--cg-surface-page);
+}
+
+/* Kontener główny — ustaw w HTML jako wrapper */
+.cg-root {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  color: var(--cg-text-default);
+  background: var(--cg-surface-page);
+}
+
+.cg-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 48px 56px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.cg-layout--center {
+  align-items: center;
+  text-align: center;
+}
+
+/* Karta / panel */
+.cg-card {
+  background: var(--cg-surface-card);
+  border: 1px solid var(--cg-border-default);
+  border-radius: 16px;
+  padding: 32px 40px;
+  box-shadow: 0 4px 24px rgba(26, 30, 50, 0.08);
+}
+
+.cg-root.cg-dark .cg-card {
+  box-shadow: 0 0 24px -6px rgba(0, 0, 0, 0.25);
+}
+
+/* Typografia (skala pod OG — większa niż 14px appki) */
+.cg-kicker {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cg-brand-primary);
+  margin: 0 0 12px;
+}
+
+.cg-title {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--cg-text-dark);
+  margin: 0 0 16px;
+}
+
+.cg-subtitle {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--cg-text-muted);
+  margin: 0;
+  max-width: 920px;
+}
+
+.cg-body {
+  font-size: 20px;
+  color: var(--cg-text-muted);
+  margin: 16px 0 0;
+}
+
+/* Akcenty */
+.cg-gradient-brand {
+  background: linear-gradient(135deg, var(--cg-brand-primary) 0%, var(--cg-brand-accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.cg-gradient-matcher-cyan {
+  background: linear-gradient(135deg, #00acc1 0%, #2196f3 50%, #673ab7 100%);
+}
+
+.cg-gradient-matcher-purple {
+  background: linear-gradient(135deg, #8e44ad 0%, #ab47bc 50%, #d81b60 100%);
+}
+
+.cg-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.cg-badge--success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.cg-root.cg-dark .cg-badge--success {
+  background: rgba(22, 101, 52, 0.25);
+  border-color: #15803d;
+  color: #bbf7d0;
+}
+
+.cg-badge--error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: var(--cg-semantic-error);
+}
+
+.cg-root.cg-dark .cg-badge--error {
+  background: rgba(120, 40, 30, 0.35);
+  border-color: #991b1b;
+  color: #fecaca;
+}
+
+/* Przyciski (w stylu index.css / landing) */
+.cg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 18px;
+  border-radius: 14px;
+  padding: 16px 28px;
+  border: none;
+  cursor: default;
+  transition: filter 0.2s;
+}
+
+.cg-btn--primary {
+  background: var(--cg-matcher-purple);
+  color: #fff;
+}
+
+.cg-btn--secondary {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.cg-root.cg-dark .cg-btn--secondary {
+  background: var(--cg-surface-muted);
+  color: var(--cg-text-default);
+}
+
+/* Pasek / ornament */
+.cg-rule {
+  height: 4px;
+  width: 120px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--cg-matcher-cyan),
+    var(--cg-matcher-purple),
+    var(--cg-matcher-pink)
+  );
+  margin: 24px 0;
+}
+
+.cg-layout--center .cg-rule {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Siatka pomocnicza */
+.cg-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+  margin-top: 28px;
+}
+
+.cg-stat {
+  flex: 1;
+  min-width: 140px;
+  padding: 20px;
+  background: var(--cg-surface-muted);
+  border: 1px solid var(--cg-border-default);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.cg-stat__value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--cg-brand-primary);
+}
+
+.cg-stat__label {
+  font-size: 14px;
+  color: var(--cg-text-muted);
+  margin-top: 4px;
+}
