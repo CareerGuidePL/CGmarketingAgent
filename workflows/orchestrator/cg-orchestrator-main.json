@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-10T08:51:51.444Z",
+  "updatedAt": "2026-04-10T16:30:37.534Z",
   "createdAt": "2026-04-07T18:41:18.859Z",
   "id": "ov4KpAcVoAuWnEPT",
   "name": "cg-orchestrator-main",
@@ -113,7 +113,7 @@
           "value": {
             "job_id": "={{ $('Get Jobs To Process').first().json.job_id }}",
             "raw_text": "={{ $('Get Jobs To Process').first().json.raw_text }}",
-            "channels": "={{ $('Get Jobs To Process').first().json.channels }}",
+            "channels": "={{ (v => v == null || v === '' ? '[\"linkedin\",\"facebook\",\"instagram\"]' : typeof v === 'string' ? v : JSON.stringify(v))($('Get Jobs To Process').first().json.channels) }}",
             "content_type": "={{ $('Get Jobs To Process').first().json.content_type }}",
             "revision_feedback": "={{ $('Get Jobs To Process').first().json.revision_feedback }}",
             "assets": "={{ $('Get Jobs To Process').first().json.assets }}"
@@ -224,19 +224,6 @@
     },
     {
       "parameters": {
-        "jsCode": "// Restore binary from Generate Content (SeaTable node drops binary)\nconst genItem = $('Generate Content').first();\nconst json = { generated_text: genItem.json.generated_text, job_id: genItem.json.job_id };\nconst binary = genItem.binary || {};\nreturn [{ json, binary }];"
-      },
-      "id": "restore-binary",
-      "name": "Restore Binary",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1200,
-        0
-      ]
-    },
-    {
-      "parameters": {
         "resource": "message",
         "operation": "send",
         "guildId": {
@@ -247,7 +234,7 @@
           "mode": "id",
           "value": "1490792473440813199"
         },
-        "content": "=🖼️ **Podglad grafiki — Job {{ $json.job_id }}**",
+        "content": "=🖼️ **{{ $json.channel }}** — Job `{{ $json.job_id }}`",
         "files": {
           "values": [
             {
@@ -285,7 +272,7 @@
           "mode": "id",
           "value": "1490792473440813199"
         },
-        "message": "=📋 **Preview — Job {{ $('Get Jobs To Process').first().json.job_id }}**\n\n{{ $('Generate Content').first().json.generated_text }}\n\n---\n✅ Odpowiedz **ok** aby zatwierdzic\n❌ Odpowiedz **nie** aby odrzucic\n✏️ Lub napisz feedback do poprawki",
+        "message": "=🖼️ **Job {{ $('Get Jobs To Process').first().json.job_id }}** — oceń post.\n\n✅ `ok` — zatwierdź\n✅ `ok 2026-04-20` lub `ok 2026-04-20 18:00` — zatwierdź z datą publikacji\n❌ `nie` — odrzuć\n✏️ Inna treść — wyślij jako poprawkę",
         "responseType": "freeText",
         "options": {}
       },
@@ -307,7 +294,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first().json;\nconst response = (item.data?.text || item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim().toLowerCase();\n\nlet decision;\nif (response === 'ok' || response === 'tak' || response === 'yes') {\n  decision = 'approve';\n} else if (response === 'nie' || response === 'no' || response === 'odrzuc' || response === 'odrzuć') {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Search Row ID').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\nconst feedback = item.data?.text || item.output || item.text || item.content || item.response || '';\n\nreturn [{ json: { decision, feedback, job_id: jobId, row_id: rowId } }];"
+        "jsCode": "const item = $input.first().json;\nconst raw = (item.data?.text || item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim();\nconst lower = raw.toLowerCase();\n\nlet decision;\nlet publish_at = '';\n\nconst okMatch = lower.match(/^(ok|tak|yes)(\\s+(.+))?$/);\nif (okMatch) {\n  if (okMatch[3]) {\n    const datePart = okMatch[3].trim();\n    const m1 = datePart.match(/(\\d{4})-(\\d{2})-(\\d{2})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\n    const m2 = datePart.match(/(\\d{1,2})[.](\\d{1,2})[.](\\d{4])(?:\\s+(\\d{1,2}):(\\d{2}))?/);\n    if (m1) {\n      publish_at = m1[1] + '-' + m1[2] + '-' + m1[3];\n      if (m1[4]) publish_at += ' ' + m1[4].padStart(2,'0') + ':' + (m1[5]||'00');\n      decision = 'approve';\n    } else if (m2) {\n      publish_at = m2[3] + '-' + m2[2].padStart(2,'0') + '-' + m2[1].padStart(2,'0');\n      if (m2[4]) publish_at += ' ' + m2[4].padStart(2,'0') + ':' + (m2[5]||'00');\n      decision = 'approve';\n    } else {\n      decision = 'approve_no_date';\n    }\n  } else {\n    decision = 'approve_no_date';\n  }\n} else if (['nie','no','odrzuc','odrzuć'].includes(lower)) {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Search Row ID').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\nconst feedback = decision === 'revise' ? raw : '';\nreturn [{ json: { decision, publish_at, row_id: rowId, job_id: jobId, revision_feedback: feedback } }];"
       },
       "id": "parse-response",
       "name": "Parse Response",
@@ -384,10 +371,30 @@
                 ],
                 "combinator": "and"
               }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.decision }}",
+                    "rightValue": "approve_no_date",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
             }
           ]
-        },
-        "options": {}
+        }
       },
       "id": "switch-decision",
       "name": "Decision",
@@ -397,39 +404,6 @@
         2000,
         0
       ]
-    },
-    {
-      "parameters": {
-        "operation": "update",
-        "tableName": "jobs",
-        "rowId": "={{ $json.row_id }}",
-        "columnsUi": {
-          "columnValues": [
-            {
-              "columnName": "status",
-              "columnValue": "approved"
-            },
-            {
-              "columnName": "approval_status",
-              "columnValue": "approved"
-            }
-          ]
-        }
-      },
-      "id": "update-approved",
-      "name": "Set Approved",
-      "type": "n8n-nodes-base.seaTable",
-      "typeVersion": 2,
-      "position": [
-        2208,
-        -208
-      ],
-      "credentials": {
-        "seaTableApi": {
-          "id": "hW2f85Vn1TyCow3D",
-          "name": "CG Marketing Agent"
-        }
-      }
     },
     {
       "parameters": {
@@ -508,7 +482,7 @@
           "mode": "id",
           "value": "1490792473440813199"
         },
-        "content": "=✅ **Job {{ $json.job_id }} zatwierdzony!** Tresc gotowa do publikacji.",
+        "content": "=✅ **Job {{ $json.job_id }}** zatwierdzony. Slajdy na Drive, linki w Seatable (`final_slides`), `publish_at` ustawione.",
         "options": {}
       },
       "id": "discord-approved",
@@ -586,6 +560,187 @@
           "name": "Discord Bot account"
         }
       }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $('Generate Content').all();\nif (!items.length) return [];\nconst rowId = $('Search Row ID').first().json._id;\nconst slides = items.map(i => ({ channel: i.json.channel, body: i.json.generated_text }));\nconst generated_text = slides.map(s => '## ' + s.channel + '\\n' + s.body).join('\\n\\n---\\n\\n');\nreturn [{ json: { _id: rowId, generated_text, job_id: items[0].json.job_id } }];"
+      },
+      "id": "combine-save",
+      "name": "Combine Generated Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        904,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return $('Generate Content').all().map(i => ({\n  json: { job_id: i.json.job_id, channel: i.json.channel, generated_text: i.json.generated_text },\n  binary: i.binary || {},\n}));"
+      },
+      "id": "expand-discord",
+      "name": "Expand for Discord Previews",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const pr = $('Parse Response').first().json;\nconst publish_at = pr.publish_at || '';\nreturn [{ json: { row_id: pr.row_id, job_id: pr.job_id, publish_at } }];"
+      },
+      "id": "seed-publish",
+      "name": "Seed Publish Date",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2208,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const ctx = $input.first().json;\nreturn $('Generate Content').all().map(i => ({\n  json: { ...i.json, row_id: ctx.row_id, job_id: ctx.job_id, publish_at: ctx.publish_at },\n  binary: i.binary || {},\n}));"
+      },
+      "id": "expand-drive-upload",
+      "name": "Expand for Drive Upload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2816,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1zPTsX9_tGzj47EMnZhNhvtf-xOkRbeu8"
+        },
+        "name": "={{ $json.job_id + '_' + $json.channel + '_approved.png' }}",
+        "options": {}
+      },
+      "id": "drive-upload-slide",
+      "name": "Upload Approved Slide",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        3024,
+        -208
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "js6W5HNGMgoA1GC0",
+          "name": "n8n Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const uploaded = $input.all();\nconst expanded = $('Expand for Drive Upload').all();\nif (!uploaded.length || !expanded.length) return [];\nconst rowId = expanded[0].json.row_id;\nconst pub = expanded[0].json.publish_at;\nconst jobId = expanded[0].json.job_id;\nconst slides = uploaded.map((it, idx) => {\n  const j = it.json;\n  const ch = expanded[idx] && expanded[idx].json ? expanded[idx].json.channel : '';\n  return {\n    channel: ch,\n    drive_file_id: j.id || j.fileId || '',\n    drive_web_view_link: j.webViewLink || j.webContentLink || '',\n  };\n});\nreturn [{ json: { row_id, publish_at: pub, final_slides: JSON.stringify(slides), job_id: jobId } }];"
+      },
+      "id": "aggregate-drive-links",
+      "name": "Aggregate Drive Links",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3232,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableName": "jobs",
+        "rowId": "={{ $json.row_id }}",
+        "columnsUi": {
+          "columnValues": [
+            {
+              "columnName": "status",
+              "columnValue": "approved"
+            },
+            {
+              "columnName": "approval_status",
+              "columnValue": "approved"
+            },
+            {
+              "columnName": "publish_at",
+              "columnValue": "={{ $json.publish_at }}"
+            },
+            {
+              "columnName": "final_slides",
+              "columnValue": "={{ $json.final_slides }}"
+            }
+          ]
+        }
+      },
+      "id": "set-approved-final",
+      "name": "Set Approved + Drive",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        3440,
+        -208
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      }
+    },
+    {
+      "id": "ask-date-node",
+      "name": "Discord Ask Date",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        -500
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendAndWait",
+        "guildId": {
+          "mode": "id",
+          "value": "1452941431802040332"
+        },
+        "channelId": {
+          "mode": "id",
+          "value": "1490792473440813199"
+        },
+        "message": "=📅 **Job {{ $('Get Jobs To Process').first().json.job_id }}** — brakuje daty publikacji.\n\nPodaj w formacie: `2026-04-20` lub `2026-04-20 18:00`\nStrefa: Europe/Warsaw.",
+        "responseType": "freeText",
+        "options": {}
+      },
+      "webhookId": "7a0e2727-a226-4a86-afb3-9c46013918b2",
+      "credentials": {
+        "discordBotApi": {
+          "id": "b4truRzbrjj3C93v",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "id": "parse-date-node",
+      "name": "Parse Date Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2608,
+        -500
+      ],
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst text = String(item.data?.text || item.text || '').trim().replace(/^ok\\s*/i, '');\nconst m1 = text.match(/(\\d{4})-(\\d{2})-(\\d{2})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\nconst m2 = text.match(/(\\d{1,2})[.](\\d{1,2})[.](\\d{4})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\nlet publish_at = '';\nif (m1) {\n  publish_at = m1[1] + '-' + m1[2] + '-' + m1[3];\n  if (m1[4]) publish_at += ' ' + m1[4].padStart(2,'0') + ':' + (m1[5]||'00');\n} else if (m2) {\n  publish_at = m2[3] + '-' + m2[2].padStart(2,'0') + '-' + m2[1].padStart(2,'0');\n  if (m2[4]) publish_at += ' ' + m2[4].padStart(2,'0') + ':' + (m2[5]||'00');\n} else {\n  throw new Error('Nie rozpoznano daty. Podaj: 2026-04-20 lub 2026-04-20 18:00 (otrzymano: ' + text + ')');\n}\nconst pr = $('Parse Response').first().json;\nreturn [{ json: { row_id: pr.row_id, job_id: pr.job_id, publish_at } }];"
+      }
     }
   ],
   "connections": {
@@ -637,6 +792,17 @@
       "main": [
         [
           {
+            "node": "Combine Generated Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Generated Text": {
+      "main": [
+        [
+          {
             "node": "Save Generated Text",
             "type": "main",
             "index": 0
@@ -648,14 +814,14 @@
       "main": [
         [
           {
-            "node": "Restore Binary",
+            "node": "Expand for Discord Previews",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Restore Binary": {
+    "Expand for Discord Previews": {
       "main": [
         [
           {
@@ -700,14 +866,25 @@
       ]
     },
     "Decision": {
-      "main": [
+      "0": [
         [
           {
-            "node": "Set Approved",
-            "type": "main",
+            "node": "Seed Publish Date",
+            "type": "0",
             "index": 0
           }
-        ],
+        ]
+      ],
+      "3": [
+        [
+          {
+            "node": "Discord Ask Date",
+            "type": "0",
+            "index": 0
+          }
+        ]
+      ],
+      "main": [
         [
           {
             "node": "Set Rejected",
@@ -724,7 +901,51 @@
         ]
       ]
     },
-    "Set Approved": {
+    "Seed Publish Date": {
+      "main": [
+        [
+          {
+            "node": "Expand for Drive Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand for Drive Upload": {
+      "main": [
+        [
+          {
+            "node": "Upload Approved Slide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Approved Slide": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Drive Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Drive Links": {
+      "main": [
+        [
+          {
+            "node": "Set Approved + Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Approved + Drive": {
       "main": [
         [
           {
@@ -756,6 +977,28 @@
           }
         ]
       ]
+    },
+    "Discord Ask Date": {
+      "0": [
+        [
+          {
+            "node": "Parse Date Response",
+            "type": "0",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Date Response": {
+      "0": [
+        [
+          {
+            "node": "Expand for Drive Upload",
+            "type": "0",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -771,9 +1014,9 @@
   },
   "meta": null,
   "pinData": {},
-  "versionId": "69958a49-61c2-40d0-8b5c-5444e633d710",
-  "activeVersionId": "69958a49-61c2-40d0-8b5c-5444e633d710",
-  "versionCounter": 64,
+  "versionId": "23af9577-76e4-47ee-81e5-28d2e26e2352",
+  "activeVersionId": "23af9577-76e4-47ee-81e5-28d2e26e2352",
+  "versionCounter": 99,
   "triggerCount": 1,
   "shared": [
     {
@@ -796,9 +1039,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-10T08:51:51.445Z",
-    "createdAt": "2026-04-10T08:51:51.445Z",
-    "versionId": "69958a49-61c2-40d0-8b5c-5444e633d710",
+    "updatedAt": "2026-04-10T16:30:37.535Z",
+    "createdAt": "2026-04-10T16:30:37.535Z",
+    "versionId": "23af9577-76e4-47ee-81e5-28d2e26e2352",
     "workflowId": "ov4KpAcVoAuWnEPT",
     "nodes": [
       {
@@ -907,7 +1150,7 @@
             "value": {
               "job_id": "={{ $('Get Jobs To Process').first().json.job_id }}",
               "raw_text": "={{ $('Get Jobs To Process').first().json.raw_text }}",
-              "channels": "={{ $('Get Jobs To Process').first().json.channels }}",
+              "channels": "={{ (v => v == null || v === '' ? '[\"linkedin\",\"facebook\",\"instagram\"]' : typeof v === 'string' ? v : JSON.stringify(v))($('Get Jobs To Process').first().json.channels) }}",
               "content_type": "={{ $('Get Jobs To Process').first().json.content_type }}",
               "revision_feedback": "={{ $('Get Jobs To Process').first().json.revision_feedback }}",
               "assets": "={{ $('Get Jobs To Process').first().json.assets }}"
@@ -1018,19 +1261,6 @@
       },
       {
         "parameters": {
-          "jsCode": "// Restore binary from Generate Content (SeaTable node drops binary)\nconst genItem = $('Generate Content').first();\nconst json = { generated_text: genItem.json.generated_text, job_id: genItem.json.job_id };\nconst binary = genItem.binary || {};\nreturn [{ json, binary }];"
-        },
-        "id": "restore-binary",
-        "name": "Restore Binary",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          1200,
-          0
-        ]
-      },
-      {
-        "parameters": {
           "resource": "message",
           "operation": "send",
           "guildId": {
@@ -1041,7 +1271,7 @@
             "mode": "id",
             "value": "1490792473440813199"
           },
-          "content": "=🖼️ **Podglad grafiki — Job {{ $json.job_id }}**",
+          "content": "=🖼️ **{{ $json.channel }}** — Job `{{ $json.job_id }}`",
           "files": {
             "values": [
               {
@@ -1079,7 +1309,7 @@
             "mode": "id",
             "value": "1490792473440813199"
           },
-          "message": "=📋 **Preview — Job {{ $('Get Jobs To Process').first().json.job_id }}**\n\n{{ $('Generate Content').first().json.generated_text }}\n\n---\n✅ Odpowiedz **ok** aby zatwierdzic\n❌ Odpowiedz **nie** aby odrzucic\n✏️ Lub napisz feedback do poprawki",
+          "message": "=🖼️ **Job {{ $('Get Jobs To Process').first().json.job_id }}** — oceń post.\n\n✅ `ok` — zatwierdź\n✅ `ok 2026-04-20` lub `ok 2026-04-20 18:00` — zatwierdź z datą publikacji\n❌ `nie` — odrzuć\n✏️ Inna treść — wyślij jako poprawkę",
           "responseType": "freeText",
           "options": {}
         },
@@ -1101,7 +1331,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const item = $input.first().json;\nconst response = (item.data?.text || item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim().toLowerCase();\n\nlet decision;\nif (response === 'ok' || response === 'tak' || response === 'yes') {\n  decision = 'approve';\n} else if (response === 'nie' || response === 'no' || response === 'odrzuc' || response === 'odrzuć') {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Search Row ID').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\nconst feedback = item.data?.text || item.output || item.text || item.content || item.response || '';\n\nreturn [{ json: { decision, feedback, job_id: jobId, row_id: rowId } }];"
+          "jsCode": "const item = $input.first().json;\nconst raw = (item.data?.text || item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim();\nconst lower = raw.toLowerCase();\n\nlet decision;\nlet publish_at = '';\n\nconst okMatch = lower.match(/^(ok|tak|yes)(\\s+(.+))?$/);\nif (okMatch) {\n  if (okMatch[3]) {\n    const datePart = okMatch[3].trim();\n    const m1 = datePart.match(/(\\d{4})-(\\d{2})-(\\d{2})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\n    const m2 = datePart.match(/(\\d{1,2})[.](\\d{1,2})[.](\\d{4])(?:\\s+(\\d{1,2}):(\\d{2}))?/);\n    if (m1) {\n      publish_at = m1[1] + '-' + m1[2] + '-' + m1[3];\n      if (m1[4]) publish_at += ' ' + m1[4].padStart(2,'0') + ':' + (m1[5]||'00');\n      decision = 'approve';\n    } else if (m2) {\n      publish_at = m2[3] + '-' + m2[2].padStart(2,'0') + '-' + m2[1].padStart(2,'0');\n      if (m2[4]) publish_at += ' ' + m2[4].padStart(2,'0') + ':' + (m2[5]||'00');\n      decision = 'approve';\n    } else {\n      decision = 'approve_no_date';\n    }\n  } else {\n    decision = 'approve_no_date';\n  }\n} else if (['nie','no','odrzuc','odrzuć'].includes(lower)) {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Search Row ID').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\nconst feedback = decision === 'revise' ? raw : '';\nreturn [{ json: { decision, publish_at, row_id: rowId, job_id: jobId, revision_feedback: feedback } }];"
         },
         "id": "parse-response",
         "name": "Parse Response",
@@ -1178,10 +1408,30 @@
                   ],
                   "combinator": "and"
                 }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 1
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.decision }}",
+                      "rightValue": "approve_no_date",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
               }
             ]
-          },
-          "options": {}
+          }
         },
         "id": "switch-decision",
         "name": "Decision",
@@ -1191,39 +1441,6 @@
           2000,
           0
         ]
-      },
-      {
-        "parameters": {
-          "operation": "update",
-          "tableName": "jobs",
-          "rowId": "={{ $json.row_id }}",
-          "columnsUi": {
-            "columnValues": [
-              {
-                "columnName": "status",
-                "columnValue": "approved"
-              },
-              {
-                "columnName": "approval_status",
-                "columnValue": "approved"
-              }
-            ]
-          }
-        },
-        "id": "update-approved",
-        "name": "Set Approved",
-        "type": "n8n-nodes-base.seaTable",
-        "typeVersion": 2,
-        "position": [
-          2208,
-          -208
-        ],
-        "credentials": {
-          "seaTableApi": {
-            "id": "hW2f85Vn1TyCow3D",
-            "name": "CG Marketing Agent"
-          }
-        }
       },
       {
         "parameters": {
@@ -1302,7 +1519,7 @@
             "mode": "id",
             "value": "1490792473440813199"
           },
-          "content": "=✅ **Job {{ $json.job_id }} zatwierdzony!** Tresc gotowa do publikacji.",
+          "content": "=✅ **Job {{ $json.job_id }}** zatwierdzony. Slajdy na Drive, linki w Seatable (`final_slides`), `publish_at` ustawione.",
           "options": {}
         },
         "id": "discord-approved",
@@ -1380,6 +1597,187 @@
             "name": "Discord Bot account"
           }
         }
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const items = $('Generate Content').all();\nif (!items.length) return [];\nconst rowId = $('Search Row ID').first().json._id;\nconst slides = items.map(i => ({ channel: i.json.channel, body: i.json.generated_text }));\nconst generated_text = slides.map(s => '## ' + s.channel + '\\n' + s.body).join('\\n\\n---\\n\\n');\nreturn [{ json: { _id: rowId, generated_text, job_id: items[0].json.job_id } }];"
+        },
+        "id": "combine-save",
+        "name": "Combine Generated Text",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          904,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "return $('Generate Content').all().map(i => ({\n  json: { job_id: i.json.job_id, channel: i.json.channel, generated_text: i.json.generated_text },\n  binary: i.binary || {},\n}));"
+        },
+        "id": "expand-discord",
+        "name": "Expand for Discord Previews",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const pr = $('Parse Response').first().json;\nconst publish_at = pr.publish_at || '';\nreturn [{ json: { row_id: pr.row_id, job_id: pr.job_id, publish_at } }];"
+        },
+        "id": "seed-publish",
+        "name": "Seed Publish Date",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2208,
+          -400
+        ]
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const ctx = $input.first().json;\nreturn $('Generate Content').all().map(i => ({\n  json: { ...i.json, row_id: ctx.row_id, job_id: ctx.job_id, publish_at: ctx.publish_at },\n  binary: i.binary || {},\n}));"
+        },
+        "id": "expand-drive-upload",
+        "name": "Expand for Drive Upload",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2816,
+          -208
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "upload",
+          "folderId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "1zPTsX9_tGzj47EMnZhNhvtf-xOkRbeu8"
+          },
+          "name": "={{ $json.job_id + '_' + $json.channel + '_approved.png' }}",
+          "options": {}
+        },
+        "id": "drive-upload-slide",
+        "name": "Upload Approved Slide",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          3024,
+          -208
+        ],
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "js6W5HNGMgoA1GC0",
+            "name": "n8n Google Drive"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const uploaded = $input.all();\nconst expanded = $('Expand for Drive Upload').all();\nif (!uploaded.length || !expanded.length) return [];\nconst rowId = expanded[0].json.row_id;\nconst pub = expanded[0].json.publish_at;\nconst jobId = expanded[0].json.job_id;\nconst slides = uploaded.map((it, idx) => {\n  const j = it.json;\n  const ch = expanded[idx] && expanded[idx].json ? expanded[idx].json.channel : '';\n  return {\n    channel: ch,\n    drive_file_id: j.id || j.fileId || '',\n    drive_web_view_link: j.webViewLink || j.webContentLink || '',\n  };\n});\nreturn [{ json: { row_id, publish_at: pub, final_slides: JSON.stringify(slides), job_id: jobId } }];"
+        },
+        "id": "aggregate-drive-links",
+        "name": "Aggregate Drive Links",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3232,
+          -208
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "tableName": "jobs",
+          "rowId": "={{ $json.row_id }}",
+          "columnsUi": {
+            "columnValues": [
+              {
+                "columnName": "status",
+                "columnValue": "approved"
+              },
+              {
+                "columnName": "approval_status",
+                "columnValue": "approved"
+              },
+              {
+                "columnName": "publish_at",
+                "columnValue": "={{ $json.publish_at }}"
+              },
+              {
+                "columnName": "final_slides",
+                "columnValue": "={{ $json.final_slides }}"
+              }
+            ]
+          }
+        },
+        "id": "set-approved-final",
+        "name": "Set Approved + Drive",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          3440,
+          -208
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        }
+      },
+      {
+        "id": "ask-date-node",
+        "name": "Discord Ask Date",
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          2400,
+          -500
+        ],
+        "parameters": {
+          "resource": "message",
+          "operation": "sendAndWait",
+          "guildId": {
+            "mode": "id",
+            "value": "1452941431802040332"
+          },
+          "channelId": {
+            "mode": "id",
+            "value": "1490792473440813199"
+          },
+          "message": "=📅 **Job {{ $('Get Jobs To Process').first().json.job_id }}** — brakuje daty publikacji.\n\nPodaj w formacie: `2026-04-20` lub `2026-04-20 18:00`\nStrefa: Europe/Warsaw.",
+          "responseType": "freeText",
+          "options": {}
+        },
+        "webhookId": "7a0e2727-a226-4a86-afb3-9c46013918b2",
+        "credentials": {
+          "discordBotApi": {
+            "id": "b4truRzbrjj3C93v",
+            "name": "Discord Bot account"
+          }
+        }
+      },
+      {
+        "id": "parse-date-node",
+        "name": "Parse Date Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2608,
+          -500
+        ],
+        "parameters": {
+          "jsCode": "const item = $input.first().json;\nconst text = String(item.data?.text || item.text || '').trim().replace(/^ok\\s*/i, '');\nconst m1 = text.match(/(\\d{4})-(\\d{2})-(\\d{2})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\nconst m2 = text.match(/(\\d{1,2})[.](\\d{1,2})[.](\\d{4})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\nlet publish_at = '';\nif (m1) {\n  publish_at = m1[1] + '-' + m1[2] + '-' + m1[3];\n  if (m1[4]) publish_at += ' ' + m1[4].padStart(2,'0') + ':' + (m1[5]||'00');\n} else if (m2) {\n  publish_at = m2[3] + '-' + m2[2].padStart(2,'0') + '-' + m2[1].padStart(2,'0');\n  if (m2[4]) publish_at += ' ' + m2[4].padStart(2,'0') + ':' + (m2[5]||'00');\n} else {\n  throw new Error('Nie rozpoznano daty. Podaj: 2026-04-20 lub 2026-04-20 18:00 (otrzymano: ' + text + ')');\n}\nconst pr = $('Parse Response').first().json;\nreturn [{ json: { row_id: pr.row_id, job_id: pr.job_id, publish_at } }];"
+        }
       }
     ],
     "connections": {
@@ -1431,6 +1829,17 @@
         "main": [
           [
             {
+              "node": "Combine Generated Text",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Combine Generated Text": {
+        "main": [
+          [
+            {
               "node": "Save Generated Text",
               "type": "main",
               "index": 0
@@ -1442,14 +1851,14 @@
         "main": [
           [
             {
-              "node": "Restore Binary",
+              "node": "Expand for Discord Previews",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Restore Binary": {
+      "Expand for Discord Previews": {
         "main": [
           [
             {
@@ -1494,14 +1903,25 @@
         ]
       },
       "Decision": {
-        "main": [
+        "0": [
           [
             {
-              "node": "Set Approved",
-              "type": "main",
+              "node": "Seed Publish Date",
+              "type": "0",
               "index": 0
             }
-          ],
+          ]
+        ],
+        "3": [
+          [
+            {
+              "node": "Discord Ask Date",
+              "type": "0",
+              "index": 0
+            }
+          ]
+        ],
+        "main": [
           [
             {
               "node": "Set Rejected",
@@ -1518,7 +1938,51 @@
           ]
         ]
       },
-      "Set Approved": {
+      "Seed Publish Date": {
+        "main": [
+          [
+            {
+              "node": "Expand for Drive Upload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Expand for Drive Upload": {
+        "main": [
+          [
+            {
+              "node": "Upload Approved Slide",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload Approved Slide": {
+        "main": [
+          [
+            {
+              "node": "Aggregate Drive Links",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate Drive Links": {
+        "main": [
+          [
+            {
+              "node": "Set Approved + Drive",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Approved + Drive": {
         "main": [
           [
             {
@@ -1550,6 +2014,28 @@
             }
           ]
         ]
+      },
+      "Discord Ask Date": {
+        "0": [
+          [
+            {
+              "node": "Parse Date Response",
+              "type": "0",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Date Response": {
+        "0": [
+          [
+            {
+              "node": "Expand for Drive Upload",
+              "type": "0",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Career Guide",
@@ -1558,18 +2044,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-10T08:51:51.591Z",
-        "id": 103,
+        "createdAt": "2026-04-10T16:30:37.625Z",
+        "id": 133,
         "workflowId": "ov4KpAcVoAuWnEPT",
-        "versionId": "69958a49-61c2-40d0-8b5c-5444e633d710",
+        "versionId": "23af9577-76e4-47ee-81e5-28d2e26e2352",
         "event": "activated",
         "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
       },
       {
-        "createdAt": "2026-04-10T08:51:51.542Z",
-        "id": 102,
+        "createdAt": "2026-04-10T16:30:37.589Z",
+        "id": 132,
         "workflowId": "ov4KpAcVoAuWnEPT",
-        "versionId": "69958a49-61c2-40d0-8b5c-5444e633d710",
+        "versionId": "23af9577-76e4-47ee-81e5-28d2e26e2352",
         "event": "deactivated",
         "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
       }
