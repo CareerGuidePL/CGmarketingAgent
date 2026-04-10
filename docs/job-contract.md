@@ -72,7 +72,7 @@ Główny magazyn `job` to **Seatable** (free tier, REST API, relacje między tab
 | `updated_at` | Date | |
 | `source` | Single Select | `discord` |
 | `content_type` | Single Select | `post`, `story`, `video_script`, `image` |
-| `channels` | Multiple Select | `facebook`, `linkedin`, `instagram`, `x`, `youtube`, `tiktok` |
+| `channels` | Multiple Select | `facebook`, `linkedin`, `instagram`, `x`, `youtube`, `tiktok` — ingest Discord zapisuje domyślnie JSON tablicy `["linkedin","facebook","instagram"]`; jeśli węzeł SeaTable wymaga innego formatu, popraw `columnValue` w `cg-ingest-discord` |
 | `approval_status` | Single Select | `pending`, `approved`, `rejected` |
 | `publish_at` | Date | Scheduler (Faza 5) |
 | `status` | Single Select | `ingested`, `revision_needed`, `generating`, `awaiting_approval`, `approved`, `rejected`, `publishing`, `published`, `failed`, `retracted`, `approved_notified`, `rejected_notified` |
@@ -81,8 +81,11 @@ Główny magazyn `job` to **Seatable** (free tier, REST API, relacje między tab
 | `discord_msg_id` | Text | Powiązanie z wiadomością Discord (HITL) |
 | `raw_text` | Long Text | Surowy tekst z wejścia |
 | `author` | Text | Autor wiadomości źródłowej |
-| `generated_text` | Long Text | Wynik generacji (orchestrator → `cg-gen-content`) |
+| `generated_text` | Long Text | Wynik generacji (orchestrator → `cg-gen-content`) — skonsolidowany tekst lub JSON slajdów (nagłówki per kanał) |
 | `revision_feedback` | Long Text | Feedback z HITL (ścieżka poprawki) |
+| `final_slides` | Long Text | **Nowe (2026-04):** JSON tablicy po zatwierdzeniu: `[{ "channel", "drive_file_id", "drive_web_view_link" }]` — finalne PNG na Google Drive w folderze **generated** (ID folderu ustawiony w węźle **Upload Approved Slide** w `cg-orchestrator-main`) |
+
+**Uwaga:** kolumnę `final_slides` należy **dodać ręcznie** w Seatable (typ Long Text), jeśli jeszcze nie istnieje.
 
 Widoki: `Default View`, **`to-process`** — używany przez `cg-orchestrator-main` (lista z limitem 1). **Zalecane filtry:** tylko stany kolejki roboczej, np. `status` = `ingested` **lub** `status` = `revision_needed`; **wykluczyć** `generating` i `awaiting_approval`, żeby ten sam job nie wracał do kolejki przy kolejnym ticku schedulera (por. [roadmap.md — Stan implementacji](roadmap.md)). `approved-pending` (filtr: approved + ingested), `reject-pending` (filtr: rejected + ingested).
 
@@ -111,6 +114,15 @@ Widoki: `Default View`, **`to-process`** — używany przez `cg-orchestrator-mai
 | `notes` | Long Text | Uwagi dot. algorytmu / best practices |
 
 Workflow `cg-gen-content` powinien pobierać spec dla danego kanału z tej tabeli i budować prompt z uwzględnieniem tonu, struktury i limitów.
+
+#### Planowana data publikacji (`publish_at`) z Discorda
+
+Opcjonalnie w treści zgłoszenia (wiadomość tworząca job) można podać datę publikacji, którą ingest próbuje wyciągnąć do kolumny **`publish_at`**:
+
+- `publikacja: 15.04.2026 18:00` lub `publikacja: 15.04.2026`
+- `2026-04-15` lub `2026-04-15 18:00`
+
+Jeśli ingest nie wykryje daty, orchestrator po zatwierdzeniu (**ok**) wysyła **drugie** pytanie HITL z prośbą o podanie daty/czasu (format `YYYY-MM-DD` lub `YYYY-MM-DD HH:mm`, strefa: `GENERIC_TIMEZONE` w Dockerze). Wartość trafia do **`publish_at`** przy tym samym update co `final_slides`.
 
 #### Discord: rozdzielenie wejścia (nowy job) i feedbacku (HITL)
 

@@ -100,6 +100,12 @@ Po **I2–I3** warto **zatrzymać się** na ocenę, zanim doda się drogie model
 
 ---
 
+## Stan implementacji i otwarte problemy (2026-04-10)
+
+**I3 (częściowo):** `cg-gen-content` generuje **osobne slajdy PNG** per kanał (JSON z LLM → parse → render HCTI); orchestrator po **ok** uploaduje pliki na **Google Drive** (folder **generated**, ID w węźle **Upload Approved Slide**), zapisuje **`final_slides`** + **`publish_at`** w Seatable; brak `publish_at` w job → **Discord Ask Publish Date**. Ingest Discord: domyślne `channels` (linkedin, facebook, instagram), opcjonalny parse daty z treści. W Seatable **dodać kolumnę** `final_slides` (Long Text) — opis: [job-contract.md](job-contract.md). Wypchnięcie JSON na instancję: `node scripts/n8n-push-workflows.mjs` (wymaga `N8N_API_*` w `.env`).
+
+---
+
 ## Stan implementacji i otwarte problemy (2026-04-09)
 
 **Instancja lokalna n8n** (np. port 5679, `N8N_API_*` w `.env`): działają workflowy **cg-ingest-discord**, **cg-gen-content** (sub-workflow), **cg-orchestrator-main** (schedule co 2 min, lista z widoku Seatable `to-process`, **Mark Generating** → `generating`, potem generacja, zapis `awaiting_approval`, preview na Discordzie), **cg-hitl-discord-reply** (legacy: polling widoków — zwykle wyłączony, gdy HITL jest w orchestratorze).
