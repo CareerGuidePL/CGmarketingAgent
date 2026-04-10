@@ -27,7 +27,7 @@ async function getBrowser() {
 // POST /render  { html, css?, width?, height?, format? }
 // Returns: image binary (PNG or JPEG)
 app.post("/render", async (req, res) => {
-  const { html, css, width = 1200, height = 630, format = "png" } = req.body;
+  const { html, css, width = 1200, height = 630, format = "png", fullPage = false } = req.body;
 
   if (!html) {
     return res.status(400).json({ error: "html field is required" });
@@ -48,7 +48,7 @@ app.post("/render", async (req, res) => {
     const imgFormat = format === "jpeg" || format === "jpg" ? "jpeg" : "png";
     const screenshot = await page.screenshot({
       type: imgFormat,
-      fullPage: false,
+      fullPage: Boolean(fullPage),
     });
 
     const buf = Buffer.isBuffer(screenshot) ? screenshot : Buffer.from(screenshot);

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-09T16:34:50.624Z",
+  "updatedAt": "2026-04-10T08:51:51.444Z",
   "createdAt": "2026-04-07T18:41:18.859Z",
   "id": "ov4KpAcVoAuWnEPT",
   "name": "cg-orchestrator-main",
@@ -115,7 +115,8 @@
             "raw_text": "={{ $('Get Jobs To Process').first().json.raw_text }}",
             "channels": "={{ $('Get Jobs To Process').first().json.channels }}",
             "content_type": "={{ $('Get Jobs To Process').first().json.content_type }}",
-            "revision_feedback": "={{ $('Get Jobs To Process').first().json.revision_feedback }}"
+            "revision_feedback": "={{ $('Get Jobs To Process').first().json.revision_feedback }}",
+            "assets": "={{ $('Get Jobs To Process').first().json.assets }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -158,6 +159,15 @@
             {
               "id": "revision_feedback",
               "displayName": "revision_feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "assets",
+              "displayName": "assets",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -214,6 +224,57 @@
     },
     {
       "parameters": {
+        "jsCode": "// Restore binary from Generate Content (SeaTable node drops binary)\nconst genItem = $('Generate Content').first();\nconst json = { generated_text: genItem.json.generated_text, job_id: genItem.json.job_id };\nconst binary = genItem.binary || {};\nreturn [{ json, binary }];"
+      },
+      "id": "restore-binary",
+      "name": "Restore Binary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "guildId": {
+          "mode": "id",
+          "value": "1452941431802040332"
+        },
+        "channelId": {
+          "mode": "id",
+          "value": "1490792473440813199"
+        },
+        "content": "=🖼️ **Podglad grafiki — Job {{ $json.job_id }}**",
+        "files": {
+          "values": [
+            {
+              "inputFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-image",
+      "name": "Send Image Preview",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1400,
+        0
+      ],
+      "credentials": {
+        "discordBotApi": {
+          "id": "b4truRzbrjj3C93v",
+          "name": "Discord Bot account"
+        }
+      },
+      "webhookId": "879211c4-8430-4913-954d-4384591b83ad"
+    },
+    {
+      "parameters": {
         "resource": "message",
         "operation": "sendAndWait",
         "guildId": {
@@ -224,7 +285,7 @@
           "mode": "id",
           "value": "1490792473440813199"
         },
-        "message": "=📋 **Preview — Job {{ $('Get Jobs To Process').first().json.job_id }}**\n\n{{ $('Generate Content').first().json.generated_text }}\n\n---\n✅ Odpowiedz **ok** aby zatwierdzić\n❌ Odpowiedz **nie** aby odrzucić\n✏️ Lub napisz feedback do poprawki",
+        "message": "=📋 **Preview — Job {{ $('Get Jobs To Process').first().json.job_id }}**\n\n{{ $('Generate Content').first().json.generated_text }}\n\n---\n✅ Odpowiedz **ok** aby zatwierdzic\n❌ Odpowiedz **nie** aby odrzucic\n✏️ Lub napisz feedback do poprawki",
         "responseType": "freeText",
         "options": {}
       },
@@ -233,7 +294,7 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        1200,
+        1600,
         0
       ],
       "webhookId": "734e5b71-782a-455d-a7ad-1d545c8054f2",
@@ -253,7 +314,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1408,
+        1808,
         0
       ]
     },
@@ -333,7 +394,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        1600,
+        2000,
         0
       ]
     },
@@ -360,7 +421,7 @@
       "type": "n8n-nodes-base.seaTable",
       "typeVersion": 2,
       "position": [
-        1808,
+        2208,
         -208
       ],
       "credentials": {
@@ -393,7 +454,7 @@
       "type": "n8n-nodes-base.seaTable",
       "typeVersion": 2,
       "position": [
-        1808,
+        2208,
         0
       ],
       "credentials": {
@@ -426,7 +487,7 @@
       "type": "n8n-nodes-base.seaTable",
       "typeVersion": 2,
       "position": [
-        1808,
+        2208,
         208
       ],
       "credentials": {
@@ -447,7 +508,7 @@
           "mode": "id",
           "value": "1490792473440813199"
         },
-        "content": "=✅ **Job {{ $json.job_id }} zatwierdzony!** Treść gotowa do publikacji.",
+        "content": "=✅ **Job {{ $json.job_id }} zatwierdzony!** Tresc gotowa do publikacji.",
         "options": {}
       },
       "id": "discord-approved",
@@ -455,7 +516,7 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        2000,
+        2400,
         -208
       ],
       "webhookId": "aaacaecb-8874-4f2f-8c57-c3a4b0ea806c",
@@ -485,7 +546,7 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        2000,
+        2400,
         0
       ],
       "webhookId": "e15237a1-05fe-4ea9-9637-6bb4da87d49b",
@@ -507,7 +568,7 @@
           "mode": "id",
           "value": "1490792473440813199"
         },
-        "content": "=✏️ **Job {{ $json.job_id }}** — przyjęto feedback, regeneruję treść...",
+        "content": "=✏️ **Job {{ $json.job_id }}** — przyjeto feedback, regeneruje tresc...",
         "options": {}
       },
       "id": "discord-revise",
@@ -515,7 +576,7 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        2000,
+        2400,
         208
       ],
       "webhookId": "5c0a67fc-84c2-4724-beae-86135919e0f3",
@@ -584,6 +645,28 @@
       ]
     },
     "Save Generated Text": {
+      "main": [
+        [
+          {
+            "node": "Restore Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Binary": {
+      "main": [
+        [
+          {
+            "node": "Send Image Preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Image Preview": {
       "main": [
         [
           {
@@ -688,9 +771,9 @@
   },
   "meta": null,
   "pinData": {},
-  "versionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
-  "activeVersionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
-  "versionCounter": 57,
+  "versionId": "69958a49-61c2-40d0-8b5c-5444e633d710",
+  "activeVersionId": "69958a49-61c2-40d0-8b5c-5444e633d710",
+  "versionCounter": 64,
   "triggerCount": 1,
   "shared": [
     {
@@ -713,9 +796,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-08T22:11:21.434Z",
-    "createdAt": "2026-04-08T22:11:21.434Z",
-    "versionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
+    "updatedAt": "2026-04-10T08:51:51.445Z",
+    "createdAt": "2026-04-10T08:51:51.445Z",
+    "versionId": "69958a49-61c2-40d0-8b5c-5444e633d710",
     "workflowId": "ov4KpAcVoAuWnEPT",
     "nodes": [
       {
@@ -826,7 +909,8 @@
               "raw_text": "={{ $('Get Jobs To Process').first().json.raw_text }}",
               "channels": "={{ $('Get Jobs To Process').first().json.channels }}",
               "content_type": "={{ $('Get Jobs To Process').first().json.content_type }}",
-              "revision_feedback": "={{ $('Get Jobs To Process').first().json.revision_feedback }}"
+              "revision_feedback": "={{ $('Get Jobs To Process').first().json.revision_feedback }}",
+              "assets": "={{ $('Get Jobs To Process').first().json.assets }}"
             },
             "matchingColumns": [],
             "schema": [
@@ -869,6 +953,15 @@
               {
                 "id": "revision_feedback",
                 "displayName": "revision_feedback",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "assets",
+                "displayName": "assets",
                 "required": false,
                 "defaultMatch": false,
                 "display": true,
@@ -925,6 +1018,57 @@
       },
       {
         "parameters": {
+          "jsCode": "// Restore binary from Generate Content (SeaTable node drops binary)\nconst genItem = $('Generate Content').first();\nconst json = { generated_text: genItem.json.generated_text, job_id: genItem.json.job_id };\nconst binary = genItem.binary || {};\nreturn [{ json, binary }];"
+        },
+        "id": "restore-binary",
+        "name": "Restore Binary",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1200,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "operation": "send",
+          "guildId": {
+            "mode": "id",
+            "value": "1452941431802040332"
+          },
+          "channelId": {
+            "mode": "id",
+            "value": "1490792473440813199"
+          },
+          "content": "=🖼️ **Podglad grafiki — Job {{ $json.job_id }}**",
+          "files": {
+            "values": [
+              {
+                "inputFieldName": "data"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "send-image",
+        "name": "Send Image Preview",
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          1400,
+          0
+        ],
+        "credentials": {
+          "discordBotApi": {
+            "id": "b4truRzbrjj3C93v",
+            "name": "Discord Bot account"
+          }
+        },
+        "webhookId": "879211c4-8430-4913-954d-4384591b83ad"
+      },
+      {
+        "parameters": {
           "resource": "message",
           "operation": "sendAndWait",
           "guildId": {
@@ -935,7 +1079,7 @@
             "mode": "id",
             "value": "1490792473440813199"
           },
-          "message": "=📋 **Preview — Job {{ $('Get Jobs To Process').first().json.job_id }}**\n\n{{ $('Generate Content').first().json.generated_text }}\n\n---\n✅ Odpowiedz **ok** aby zatwierdzić\n❌ Odpowiedz **nie** aby odrzucić\n✏️ Lub napisz feedback do poprawki",
+          "message": "=📋 **Preview — Job {{ $('Get Jobs To Process').first().json.job_id }}**\n\n{{ $('Generate Content').first().json.generated_text }}\n\n---\n✅ Odpowiedz **ok** aby zatwierdzic\n❌ Odpowiedz **nie** aby odrzucic\n✏️ Lub napisz feedback do poprawki",
           "responseType": "freeText",
           "options": {}
         },
@@ -944,7 +1088,7 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          1200,
+          1600,
           0
         ],
         "webhookId": "734e5b71-782a-455d-a7ad-1d545c8054f2",
@@ -964,7 +1108,7 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1408,
+          1808,
           0
         ]
       },
@@ -1044,7 +1188,7 @@
         "type": "n8n-nodes-base.switch",
         "typeVersion": 3,
         "position": [
-          1600,
+          2000,
           0
         ]
       },
@@ -1071,7 +1215,7 @@
         "type": "n8n-nodes-base.seaTable",
         "typeVersion": 2,
         "position": [
-          1808,
+          2208,
           -208
         ],
         "credentials": {
@@ -1104,7 +1248,7 @@
         "type": "n8n-nodes-base.seaTable",
         "typeVersion": 2,
         "position": [
-          1808,
+          2208,
           0
         ],
         "credentials": {
@@ -1137,7 +1281,7 @@
         "type": "n8n-nodes-base.seaTable",
         "typeVersion": 2,
         "position": [
-          1808,
+          2208,
           208
         ],
         "credentials": {
@@ -1158,7 +1302,7 @@
             "mode": "id",
             "value": "1490792473440813199"
           },
-          "content": "=✅ **Job {{ $json.job_id }} zatwierdzony!** Treść gotowa do publikacji.",
+          "content": "=✅ **Job {{ $json.job_id }} zatwierdzony!** Tresc gotowa do publikacji.",
           "options": {}
         },
         "id": "discord-approved",
@@ -1166,7 +1310,7 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          2000,
+          2400,
           -208
         ],
         "webhookId": "aaacaecb-8874-4f2f-8c57-c3a4b0ea806c",
@@ -1196,7 +1340,7 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          2000,
+          2400,
           0
         ],
         "webhookId": "e15237a1-05fe-4ea9-9637-6bb4da87d49b",
@@ -1218,7 +1362,7 @@
             "mode": "id",
             "value": "1490792473440813199"
           },
-          "content": "=✏️ **Job {{ $json.job_id }}** — przyjęto feedback, regeneruję treść...",
+          "content": "=✏️ **Job {{ $json.job_id }}** — przyjeto feedback, regeneruje tresc...",
           "options": {}
         },
         "id": "discord-revise",
@@ -1226,7 +1370,7 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          2000,
+          2400,
           208
         ],
         "webhookId": "5c0a67fc-84c2-4724-beae-86135919e0f3",
@@ -1295,6 +1439,28 @@
         ]
       },
       "Save Generated Text": {
+        "main": [
+          [
+            {
+              "node": "Restore Binary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Restore Binary": {
+        "main": [
+          [
+            {
+              "node": "Send Image Preview",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Image Preview": {
         "main": [
           [
             {
@@ -1392,34 +1558,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-08T22:11:21.519Z",
-        "id": 83,
+        "createdAt": "2026-04-10T08:51:51.591Z",
+        "id": 103,
         "workflowId": "ov4KpAcVoAuWnEPT",
-        "versionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
+        "versionId": "69958a49-61c2-40d0-8b5c-5444e633d710",
         "event": "activated",
         "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
       },
       {
-        "createdAt": "2026-04-09T16:34:50.711Z",
-        "id": 85,
+        "createdAt": "2026-04-10T08:51:51.542Z",
+        "id": 102,
         "workflowId": "ov4KpAcVoAuWnEPT",
-        "versionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
-        "event": "activated",
-        "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
-      },
-      {
-        "createdAt": "2026-04-08T22:11:21.483Z",
-        "id": 82,
-        "workflowId": "ov4KpAcVoAuWnEPT",
-        "versionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
-        "event": "deactivated",
-        "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
-      },
-      {
-        "createdAt": "2026-04-09T16:34:50.683Z",
-        "id": 84,
-        "workflowId": "ov4KpAcVoAuWnEPT",
-        "versionId": "34105df3-4cde-4be4-a3be-37dca1d8b616",
+        "versionId": "69958a49-61c2-40d0-8b5c-5444e633d710",
         "event": "deactivated",
         "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
       }
