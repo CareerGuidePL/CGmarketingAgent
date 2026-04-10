@@ -795,6 +795,11 @@
             "node": "Combine Generated Text",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Expand for Discord Previews",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -812,13 +817,7 @@
     },
     "Save Generated Text": {
       "main": [
-        [
-          {
-            "node": "Expand for Discord Previews",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Expand for Discord Previews": {
