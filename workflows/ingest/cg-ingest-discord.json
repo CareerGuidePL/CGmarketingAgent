@@ -13,7 +13,7 @@
           "interval": [
             {
               "field": "minutes",
-              "minutesInterval": 2
+              "minutesInterval": 3
             }
           ]
         }
@@ -48,7 +48,10 @@
           "id": "hW2f85Vn1TyCow3D",
           "name": "CG Marketing Agent"
         }
-      }
+      },
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
     },
     {
       "parameters": {
@@ -205,7 +208,10 @@
           "id": "hW2f85Vn1TyCow3D",
           "name": "CG Marketing Agent"
         }
-      }
+      },
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
     },
     {
       "parameters": {
@@ -234,7 +240,10 @@
           "id": "hW2f85Vn1TyCow3D",
           "name": "CG Marketing Agent"
         }
-      }
+      },
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
     },
     {
       "id": "if-has-attachment",
@@ -345,7 +354,10 @@
           "id": "hW2f85Vn1TyCow3D",
           "name": "CG Marketing Agent"
         }
-      }
+      },
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
     }
   ],
   "connections": {
@@ -528,7 +540,7 @@
             "interval": [
               {
                 "field": "minutes",
-                "minutesInterval": 2
+                "minutesInterval": 3
               }
             ]
           }
@@ -563,7 +575,10 @@
             "id": "hW2f85Vn1TyCow3D",
             "name": "CG Marketing Agent"
           }
-        }
+        },
+        "retryOnFail": true,
+        "maxTries": 5,
+        "waitBetweenTries": 5000
       },
       {
         "parameters": {
@@ -720,7 +735,10 @@
             "id": "hW2f85Vn1TyCow3D",
             "name": "CG Marketing Agent"
           }
-        }
+        },
+        "retryOnFail": true,
+        "maxTries": 5,
+        "waitBetweenTries": 5000
       },
       {
         "parameters": {
@@ -749,7 +767,10 @@
             "id": "hW2f85Vn1TyCow3D",
             "name": "CG Marketing Agent"
           }
-        }
+        },
+        "retryOnFail": true,
+        "maxTries": 5,
+        "waitBetweenTries": 5000
       },
       {
         "id": "if-has-attachment",
@@ -860,7 +881,10 @@
             "id": "hW2f85Vn1TyCow3D",
             "name": "CG Marketing Agent"
           }
-        }
+        },
+        "retryOnFail": true,
+        "maxTries": 5,
+        "waitBetweenTries": 5000
       }
     ],
     "connections": {
