@@ -6,7 +6,8 @@
       "Bash(bash scripts/seatable/api.sh help)",
       "Bash(bash scripts/seatable/api.sh GET /dtable/api/v1/dtables/CG%20Marketing%20Agent/rows/?table_name=jobs)",
       "Bash(bash scripts/seatable/api.sh sql \"SELECT job_id, status FROM jobs LIMIT 10\")",
-      "Bash(bash scripts/seatable/api.sh auth)"
+      "Bash(bash scripts/seatable/api.sh auth)",
+      "mcp__n8n-mcp__n8n_health_check"
     ],
     "additionalDirectories": [
       "/tmp"
