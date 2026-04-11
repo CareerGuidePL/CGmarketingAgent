@@ -7,8 +7,10 @@
 #   2. Sprawdź `docker ps`: stary kontener **ngrok** (np. z innego projektu) często mapuje :4040 i `--domain=*.ngrok-free.dev`.
 #      Koliduje z tym stackiem → brak startu na :4040, ERR_NGROK_334 albo błąd w przeglądarce; zatrzymaj/usuń go (`docker stop ngrok`).
 #   3. docker compose --profile tunnel up -d
-#   4. Open http://127.0.0.1:4041 → copy HTTPS URL → set WEBHOOK_URL + N8N_HOST in `.env`, restart n8n
-#      (4041 na hoście: uniknięcie konfliktu z lokalnym `ngrok.exe`, który zwykle zajmuje :4040)
+#   4. Wspólny URL zespołu: w `.env` ustaw NGROK_PUBLIC_URL=https://twoja.ngrok-free.dev oraz TEN SAM
+#      NGROK_AUTHTOKEN z konta, które ma tę domenę (1Password — nie git). Potem N8N_HOST + WEBHOOK_URL (https)
+#      i restart n8n. Bez NGROK_PUBLIC_URL tunel ma losowy host — stary link → ERR_NGROK_8012 / 502.
+#      Panel: http://127.0.0.1:4041 (4041 unika konfliktu z lokalnym ngrok.exe na :4040)
 
 services:
   n8n:
@@ -35,11 +37,12 @@ services:
     restart: unless-stopped
     depends_on:
       - n8n
-    command:
-      - "http"
-      - "n8n:5678"
+    entrypoint: ["/bin/sh", "/ngrok-entrypoint.sh"]
+    volumes:
+      - ./docker/ngrok-entrypoint.sh:/ngrok-entrypoint.sh:ro
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:-}
+      NGROK_PUBLIC_URL: ${NGROK_PUBLIC_URL:-}
     ports:
       # W kontenerze nadal 4040 (interfejs agenta). Na hoście 4041 — lokalny ngrok często trzyma już :4040.
       - "127.0.0.1:4041:4040"

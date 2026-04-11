@@ -1,0 +1,2 @@
+# Skrypty uruchamiane w kontenerach Linux (np. ngrok) — unikaj CRLF na Windowsie
+docker/ngrok-entrypoint.sh text eol=lf
