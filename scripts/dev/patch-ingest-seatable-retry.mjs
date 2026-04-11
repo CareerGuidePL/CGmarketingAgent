@@ -20,7 +20,7 @@ function patchSection(nodes) {
     if (node.type === "n8n-nodes-base.scheduleTrigger") {
       const iv = node.parameters?.rule?.interval?.[0];
       if (iv && iv.field === "minutes" && iv.minutesInterval === 2) {
-        iv.minutesInterval = 30;
+        iv.minutesInterval = 2;
       }
     }
     if (node.type === "n8n-nodes-base.seaTable") {

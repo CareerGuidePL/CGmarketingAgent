@@ -13,7 +13,7 @@
           "interval": [
             {
               "field": "minutes",
-              "minutesInterval": 30
+              "minutesInterval": 5
             }
           ]
         }
@@ -1059,7 +1059,7 @@
             "interval": [
               {
                 "field": "minutes",
-                "minutesInterval": 30
+                "minutesInterval": 5
               }
             ]
           }
