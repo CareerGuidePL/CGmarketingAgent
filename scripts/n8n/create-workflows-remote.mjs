@@ -16,9 +16,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..", "..");
 
 const STEPS = [
-  { rel: "workflows/generate/cg-gen-content.json", oldId: "z7FIfQqHzQGJW4ib" },
-  { rel: "workflows/ingest/cg-ingest-discord.json", oldId: "MvyZHtercUEd3cVb" },
-  { rel: "workflows/orchestrator/cg-orchestrator-main.json", oldId: "ov4KpAcVoAuWnEPT" },
+  { rel: "workflows/generate/cg-gen-content.json", oldId: "AJTS9utBRhhRDC7o" },
+  { rel: "workflows/ingest/cg-ingest-discord.json", oldId: "NGJL8YxmWfv2Ltqu" },
+  { rel: "workflows/orchestrator/cg-orchestrator-main.json", oldId: "kSXz3MZM2SuJ31pf" },
 ];
 
 function loadEnvFile(p) {

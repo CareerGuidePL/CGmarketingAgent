@@ -1,7 +1,7 @@
 {
   "updatedAt": "2026-04-10T11:17:06.773Z",
   "createdAt": "2026-04-06T16:54:48.448Z",
-  "id": "MvyZHtercUEd3cVb",
+  "id": "NGJL8YxmWfv2Ltqu",
   "name": "cg-ingest-discord",
   "description": null,
   "active": true,
@@ -501,7 +501,7 @@
       "updatedAt": "2026-04-06T16:54:48.451Z",
       "createdAt": "2026-04-06T16:54:48.451Z",
       "role": "workflow:owner",
-      "workflowId": "MvyZHtercUEd3cVb",
+      "workflowId": "NGJL8YxmWfv2Ltqu",
       "projectId": "PXHJPWu3tFvLsdCG",
       "project": {
         "updatedAt": "2026-04-06T12:34:09.192Z",
@@ -520,7 +520,7 @@
     "updatedAt": "2026-04-10T11:17:06.774Z",
     "createdAt": "2026-04-10T11:17:06.774Z",
     "versionId": "2f17dda4-092d-449f-993f-956a54190d72",
-    "workflowId": "MvyZHtercUEd3cVb",
+    "workflowId": "NGJL8YxmWfv2Ltqu",
     "nodes": [
       {
         "parameters": {
@@ -997,7 +997,7 @@
       {
         "createdAt": "2026-04-10T11:17:06.848Z",
         "id": 113,
-        "workflowId": "MvyZHtercUEd3cVb",
+        "workflowId": "NGJL8YxmWfv2Ltqu",
         "versionId": "2f17dda4-092d-449f-993f-956a54190d72",
         "event": "activated",
         "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"
@@ -1005,7 +1005,7 @@
       {
         "createdAt": "2026-04-10T11:17:06.812Z",
         "id": 112,
-        "workflowId": "MvyZHtercUEd3cVb",
+        "workflowId": "NGJL8YxmWfv2Ltqu",
         "versionId": "2f17dda4-092d-449f-993f-956a54190d72",
         "event": "deactivated",
         "userId": "e4b48a77-42a5-4875-af4d-6bfa8dc95627"

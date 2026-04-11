@@ -9,7 +9,8 @@ Uruchamiaj z **korzenia repozytorium** (`CG-agent/`), żeby ścieżki względne 
 | `export.sh` | Eksport wszystkich workflowów z instancji do `workflows/` (`N8N_API_*`). |
 | `import.sh` | `POST` jednego pliku JSON jako nowy workflow. |
 | `push-workflows.mjs` | `PUT` — aktualizacja istniejących workflowów po `id` w JSON (domyślnie orchestrator, gen-content, ingest). |
-| `create-workflows-remote.mjs` | `POST` — **nowa** instancja (pusta baza): tworzy 4 workflowy + mapuje ID subworkflowu w orchestratorze. |
+| `list-workflows.mjs` | `GET` — lista `id` + nazwa na instancji (do porównania z plikami w repo). |
+| `create-workflows-remote.mjs` | `POST` — **nowa** instancja (pusta baza): tworzy 3 workflowy + mapuje ID subworkflowu w orchestratorze. |
 | `delete-execution.mjs` | Usunięcie pojedynczego execution po ID. |
 
 Przykłady:
@@ -18,6 +19,7 @@ Przykłady:
 bash scripts/n8n/export.sh
 bash scripts/n8n/import.sh workflows/ingest/cg-ingest-discord.json
 node scripts/n8n/push-workflows.mjs
+node scripts/n8n/list-workflows.mjs
 node scripts/n8n/create-workflows-remote.mjs
 node scripts/n8n/delete-execution.mjs <executionId>
 ```
