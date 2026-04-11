@@ -40,8 +40,8 @@ bash scripts/seatable/api.sh sql "SELECT job_id, status FROM jobs LIMIT 5"
 | Plik | Opis |
 |------|------|
 | `patch-cg-gen-channels.mjs` | Jednorazowa łatka kodu w `cg-gen-content.json` (kanały). |
-| `patch-orchestrator-seatable-throttle.mjs` | Mniej zapytań SeaTable: usuwa zbędny Search Row ID, `retryOnFail` na SeaTable, orchestrator co 5 min. |
-| `patch-ingest-seatable-retry.mjs` | `retryOnFail` na SeaTable w ingest + interwał 3 min (rozłączenie z orchestratorem). |
+| `patch-orchestrator-seatable-throttle.mjs` | Mniej zapytań SeaTable: usuwa zbędny Search Row ID, `retryOnFail` na SeaTable (skrypt ustawiał orchestrator na 30 min — dostosuj w pliku jeśli potrzeba). |
+| `patch-ingest-seatable-retry.mjs` | `retryOnFail` na SeaTable w ingest + interwał 30 min w skrypcie (dostosuj w pliku jeśli potrzeba). |
 | `check-n8n-executions.mjs` | Ostatnie wykonania z API. |
 | `check-n8n-execution-detail.mjs` | Szczegóły jednego execution. |
 

@@ -12,8 +12,8 @@ const WF = path.join(ROOT, "workflows/orchestrator/cg-orchestrator-main.json");
 
 const RETRY = {
   retryOnFail: true,
-  maxTries: 5,
-  waitBetweenTries: 5000,
+  maxTries: 2,
+  waitBetweenTries: 8000,
 };
 
 function patchSection(nodes, connections) {
@@ -24,7 +24,7 @@ function patchSection(nodes, connections) {
     if (node.type === "n8n-nodes-base.scheduleTrigger") {
       const iv = node.parameters?.rule?.interval?.[0];
       if (iv && iv.field === "minutes" && iv.minutesInterval === 2) {
-        iv.minutesInterval = 5;
+        iv.minutesInterval = 30;
       }
     }
     if (node.type === "n8n-nodes-base.seaTable") {

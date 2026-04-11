@@ -13,7 +13,7 @@
           "interval": [
             {
               "field": "minutes",
-              "minutesInterval": 5
+              "minutesInterval": 30
             }
           ]
         }
@@ -49,8 +49,8 @@
         }
       },
       "retryOnFail": true,
-      "maxTries": 5,
-      "waitBetweenTries": 5000
+      "maxTries": 2,
+      "waitBetweenTries": 8000
     },
     {
       "parameters": {
@@ -85,8 +85,8 @@
         }
       },
       "retryOnFail": true,
-      "maxTries": 5,
-      "waitBetweenTries": 5000
+      "maxTries": 2,
+      "waitBetweenTries": 8000
     },
     {
       "parameters": {
@@ -223,8 +223,8 @@
         }
       },
       "retryOnFail": true,
-      "maxTries": 5,
-      "waitBetweenTries": 5000
+      "maxTries": 2,
+      "waitBetweenTries": 8000
     },
     {
       "parameters": {
@@ -446,8 +446,8 @@
         }
       },
       "retryOnFail": true,
-      "maxTries": 5,
-      "waitBetweenTries": 5000
+      "maxTries": 2,
+      "waitBetweenTries": 8000
     },
     {
       "parameters": {
@@ -486,8 +486,8 @@
         }
       },
       "retryOnFail": true,
-      "maxTries": 5,
-      "waitBetweenTries": 5000
+      "maxTries": 2,
+      "waitBetweenTries": 8000
     },
     {
       "parameters": {
@@ -719,8 +719,8 @@
         }
       },
       "retryOnFail": true,
-      "maxTries": 5,
-      "waitBetweenTries": 5000
+      "maxTries": 2,
+      "waitBetweenTries": 8000
     },
     {
       "id": "ask-date-node",
@@ -1059,7 +1059,7 @@
             "interval": [
               {
                 "field": "minutes",
-                "minutesInterval": 5
+                "minutesInterval": 30
               }
             ]
           }
@@ -1095,8 +1095,8 @@
           }
         },
         "retryOnFail": true,
-        "maxTries": 5,
-        "waitBetweenTries": 5000
+        "maxTries": 2,
+        "waitBetweenTries": 8000
       },
       {
         "parameters": {
@@ -1131,8 +1131,8 @@
           }
         },
         "retryOnFail": true,
-        "maxTries": 5,
-        "waitBetweenTries": 5000
+        "maxTries": 2,
+        "waitBetweenTries": 8000
       },
       {
         "parameters": {
@@ -1269,8 +1269,8 @@
           }
         },
         "retryOnFail": true,
-        "maxTries": 5,
-        "waitBetweenTries": 5000
+        "maxTries": 2,
+        "waitBetweenTries": 8000
       },
       {
         "parameters": {
@@ -1492,8 +1492,8 @@
           }
         },
         "retryOnFail": true,
-        "maxTries": 5,
-        "waitBetweenTries": 5000
+        "maxTries": 2,
+        "waitBetweenTries": 8000
       },
       {
         "parameters": {
@@ -1532,8 +1532,8 @@
           }
         },
         "retryOnFail": true,
-        "maxTries": 5,
-        "waitBetweenTries": 5000
+        "maxTries": 2,
+        "waitBetweenTries": 8000
       },
       {
         "parameters": {
@@ -1765,8 +1765,8 @@
           }
         },
         "retryOnFail": true,
-        "maxTries": 5,
-        "waitBetweenTries": 5000
+        "maxTries": 2,
+        "waitBetweenTries": 8000
       },
       {
         "id": "ask-date-node",
