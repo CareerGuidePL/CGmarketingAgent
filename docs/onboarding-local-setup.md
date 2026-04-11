@@ -1,6 +1,6 @@
 # Onboarding: lokalne n8n — CG Marketing Agent
 
-Instrukcja dla każdej osoby z zespołu, która chce uruchomić lokalną instancję n8n.
+Instrukcja dla każdej osoby z zespołu, która chce uruchomić **lokalną** instancję n8n (development). **Główna instancja zespołu** działa na **VPS** — start bez Dockera u siebie: [onboarding.md](onboarding.md) (wariant A).
 
 **Wymagania wstępne:** Docker Desktop zainstalowany i uruchomiony, dostęp do repozytorium na GitHub.
 

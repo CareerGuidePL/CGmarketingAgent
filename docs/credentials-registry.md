@@ -13,7 +13,7 @@ Uzupełniaj wraz z Fazą 1 ([roadmap.md](roadmap.md)). Opcjonalnie: osobny arkus
 
 | Obszar | Serwis | Nazwa credentiala w n8n (propozycja) | Uwagi / status |
 |--------|--------|--------------------------------------|----------------|
-| Orchestracja | n8n API | `CG n8n API — local` | `N8N_API_KEY` z Settings → API |
+| Orchestracja | n8n API | `CG n8n API — VPS` (lub `… — local` przy dev) | `N8N_API_KEY` z Settings → API; `N8N_API_URL` = aktywna instancja |
 | Wejścia | Discord | `CG Discord Bot — dev` | Bot token; serwer TEAM CG, kanał `cg-agent` |
 | Wejścia | Mail | | IMAP/SMTP lub usługa |
 | Dane | Google Drive | | OAuth |

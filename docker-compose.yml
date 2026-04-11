@@ -1,4 +1,4 @@
-# Local n8n (self-hosted). See `.env.example` — copy to `.env` and set N8N_ENCRYPTION_KEY.
+# n8n self-hosted: lokalny dev lub ten sam plik na VPS (np. /opt/CGmarketingAgent). See `.env.example`.
 # Start: `docker compose up -d`  →  http://127.0.0.1:5679
 # Data persists in Docker volume `n8n_data` (SQLite under /home/node/.n8n).
 #

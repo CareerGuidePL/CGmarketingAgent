@@ -23,15 +23,20 @@ cp .cursor/mcp.json.example .cursor/mcp.json
 | `DISCORD_SERVER_ID` | Discord → TEAM CG → prawym na ikone serwera → Copy Server ID | Wymaga Developer Mode |
 | `DISCORD_CHANNEL_ID` | Discord → kanal `cg-agent` → prawym → Copy Channel ID | Text channel, nie forum |
 | `SEATABLE_API_TOKEN` | SeaTable → baza `CG Marketing Agent` → `...` → API Token (read-write) | Base API Token, **nie** Account Token |
-| `N8N_API_KEY` | n8n UI → Settings → API → Create API Key | Po uruchomieniu n8n (krok 3) |
+| `N8N_API_KEY` | n8n UI → Settings → API → Create API Key | Po pierwszym logowaniu do n8n (krok 3) |
+| `N8N_API_URL`, `N8N_HOST`, `WEBHOOK_URL`, `N8N_PROTOCOL` | Dopasuj do instancji | **Zespół (VPS):** HTTPS + domena (szablon w [.env.example](../.env.example)). **Dev lokalny:** `http://127.0.0.1:5679` |
 
-## 3. Uruchom n8n
+## 3. Dostep do n8n
+
+**Wariant A — korzystasz z instancji zespołu na VPS (typowe):** otwórz **`https://cg-agent.n8n.crait.pro`** (konto masz od admina). W `.env` ustaw `N8N_API_URL=https://cg-agent.n8n.crait.pro` (bez końcowego `/`), `N8N_HOST`, `WEBHOOK_URL`, `N8N_PROTOCOL=https` zgodnie z [.env.example](../.env.example). **Nie musisz** uruchamiać `docker compose` u siebie, żeby edytować workflowy — wystarczy API key i/lub UI.
+
+**Wariant B — lokalny n8n (development):**
 
 ```bash
 docker compose up -d
 ```
 
-Otworz http://127.0.0.1:5679 — utworz konto admin, wygeneruj API key i wpisz do `.env`.
+UI: **http://127.0.0.1:5679** — pierwszy start: załóż konto admin, potem wygeneruj API key i wpisz do `.env`.
 
 ## 4. Uzupelnij `.mcp.json` i `.cursor/mcp.json`
 
