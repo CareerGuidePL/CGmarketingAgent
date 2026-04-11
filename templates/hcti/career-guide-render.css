@@ -54,24 +54,27 @@
   --cg-accent-legacy: #8b5cf6;
 }
 
-/* ─── Dark theme (dodaj klasę .cg-dark na .cg-root) ─── */
+/* ─── Dark theme (dodaj klasę .cg-dark na .cg-root) ───
+ * Estetyka zbliżona do shadcn / zinc: głębia, ring, mesh z samych gradientów.
+ */
 .cg-root.cg-dark {
-  --cg-brand-primary: #8cb2e6;
-  --cg-brand-accent: #a7dbff;
-  --cg-brand-secondary: #262f4d;
-  --cg-semantic-error: #78281e;
+  --cg-brand-primary: #93c5fd;
+  --cg-brand-accent: #bae6fd;
+  --cg-brand-secondary: #334155;
+  --cg-semantic-error: #f87171;
 
-  --cg-text-default: #fbfbfd;
-  --cg-text-dark: #fbfbfd;
-  --cg-text-muted: #a5afc8;
+  --cg-text-default: #f8fafc;
+  --cg-text-dark: #f8fafc;
+  --cg-text-muted: #94a3b8;
 
-  --cg-surface-page: #161b2b;
-  --cg-surface-card: #1e2439;
-  --cg-surface-muted: #262f4d;
-  --cg-surface-alt: #262f4d;
+  --cg-surface-page: #0c0e14;
+  --cg-surface-card: rgba(30, 41, 59, 0.72);
+  --cg-surface-muted: rgba(51, 65, 85, 0.45);
+  --cg-surface-alt: #1e293b;
 
-  --cg-border-default: #2f3b5c;
-  --cg-border-light: #415180;
+  --cg-border-default: rgba(148, 163, 184, 0.14);
+  --cg-border-light: rgba(148, 163, 184, 0.08);
+  --cg-ring-brand: rgba(147, 197, 253, 0.35);
 }
 
 *,
@@ -99,6 +102,11 @@ body {
   background: var(--cg-surface-page);
 }
 
+/* Kanwa PNG: jednolite tło pod ciemny slajd (Chromium :has) */
+body:has(.cg-root.cg-dark) {
+  background: #0c0e14;
+}
+
 /* Kontener główny — ustaw w HTML jako wrapper */
 .cg-root {
   width: 100%;
@@ -106,6 +114,55 @@ body {
   min-height: 100%;
   color: var(--cg-text-default);
   background: var(--cg-surface-page);
+  position: relative;
+  isolation: isolate;
+}
+
+/* Ciemny slajd: „mesh” + vignette (bez assetów, tylko gradienty) */
+.cg-root.cg-dark {
+  background-color: #0c0e14;
+  background-image:
+    radial-gradient(ellipse 90% 70% at 10% -15%, rgba(77, 150, 217, 0.22), transparent 55%),
+    radial-gradient(ellipse 75% 60% at 92% 8%, rgba(142, 68, 173, 0.18), transparent 50%),
+    radial-gradient(ellipse 55% 45% at 75% 100%, rgba(0, 172, 193, 0.12), transparent 50%),
+    linear-gradient(
+      168deg,
+      #0a0c12 0%,
+      #111827 38%,
+      #0f172a 72%,
+      #0c0e14 100%
+    );
+}
+
+.cg-root.cg-dark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle at center,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 100%
+  );
+  opacity: 0.85;
+}
+
+.cg-root.cg-dark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: linear-gradient(rgba(248, 250, 252, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(248, 250, 252, 0.35) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.cg-root.cg-dark > * {
+  position: relative;
+  z-index: 1;
 }
 
 .cg-layout {
@@ -135,7 +192,15 @@ body {
 }
 
 .cg-root.cg-dark .cg-card {
-  box-shadow: 0 0 24px -6px rgba(0, 0, 0, 0.25);
+  background: rgba(30, 41, 59, 0.55);
+  border: 1px solid var(--cg-border-default);
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 28px 56px -16px rgba(0, 0, 0, 0.65),
+    0 0 80px -24px var(--cg-ring-brand);
+  backdrop-filter: blur(12px);
 }
 
 /* Typografia (skala pod OG — większa niż 14px appki) */
@@ -154,6 +219,11 @@ body {
   line-height: 1.15;
   color: var(--cg-text-dark);
   margin: 0 0 16px;
+}
+
+.cg-root.cg-dark .cg-title {
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.06), 0 22px 48px rgba(0, 0, 0, 0.45);
 }
 
 .cg-subtitle {
@@ -216,8 +286,8 @@ body {
 }
 
 .cg-root.cg-dark .cg-badge--error {
-  background: rgba(120, 40, 30, 0.35);
-  border-color: #991b1b;
+  background: rgba(127, 29, 29, 0.35);
+  border-color: rgba(248, 113, 113, 0.35);
   color: #fecaca;
 }
 
@@ -270,6 +340,19 @@ body {
   margin-right: auto;
 }
 
+.cg-root.cg-dark .cg-rule {
+  height: 5px;
+  width: 140px;
+  box-shadow:
+    0 0 20px rgba(0, 172, 193, 0.45),
+    0 0 36px rgba(142, 68, 173, 0.35);
+  opacity: 0.98;
+}
+
+.cg-root.cg-dark .cg-kicker {
+  text-shadow: 0 0 24px var(--cg-ring-brand);
+}
+
 /* Siatka pomocnicza */
 .cg-row {
   display: flex;
@@ -287,6 +370,12 @@ body {
   border: 1px solid var(--cg-border-default);
   border-radius: 12px;
   text-align: center;
+}
+
+.cg-root.cg-dark .cg-stat {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: var(--cg-border-default);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
 }
 
 .cg-stat__value {
