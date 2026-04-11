@@ -54,6 +54,32 @@
     },
     {
       "parameters": {
+        "operation": "search",
+        "tableName": "jobs",
+        "searchColumn": "job_id",
+        "searchTerm": "={{ $json.job_id }}",
+        "options": {}
+      },
+      "id": "search-row",
+      "name": "Search Row ID",
+      "type": "n8n-nodes-base.seaTable",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "credentials": {
+        "seaTableApi": {
+          "id": "hW2f85Vn1TyCow3D",
+          "name": "CG Marketing Agent"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 8000
+    },
+    {
+      "parameters": {
         "operation": "update",
         "tableName": "jobs",
         "rowId": "={{ $json._id }}",
@@ -190,7 +216,7 @@
       "parameters": {
         "operation": "update",
         "tableName": "jobs",
-        "rowId": "={{ $('Get Jobs To Process').first().json._id }}",
+        "rowId": "={{ $('Search Row ID').first().json._id }}",
         "columnsUi": {
           "columnValues": [
             {
@@ -298,7 +324,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first().json;\nconst raw = (item.data?.text || item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim();\nconst lower = raw.toLowerCase();\n\nlet decision;\nlet publish_at = '';\n\nconst okMatch = lower.match(/^(ok|tak|yes)(\\s+(.+))?$/);\nif (okMatch) {\n  if (okMatch[3]) {\n    const datePart = okMatch[3].trim();\n    const m1 = datePart.match(/(\\d{4})-(\\d{2})-(\\d{2})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\n    const m2 = datePart.match(/(\\d{1,2})[.](\\d{1,2})[.](\\d{4})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\n    if (m1) {\n      publish_at = m1[1] + '-' + m1[2] + '-' + m1[3];\n      if (m1[4]) publish_at += ' ' + m1[4].padStart(2,'0') + ':' + (m1[5]||'00');\n      decision = 'approve';\n    } else if (m2) {\n      publish_at = m2[3] + '-' + m2[2].padStart(2,'0') + '-' + m2[1].padStart(2,'0');\n      if (m2[4]) publish_at += ' ' + m2[4].padStart(2,'0') + ':' + (m2[5]||'00');\n      decision = 'approve';\n    } else {\n      decision = 'approve_no_date';\n    }\n  } else {\n    decision = 'approve_no_date';\n  }\n} else if (['nie','no','odrzuc','odrzuć'].includes(lower)) {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Get Jobs To Process').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\nconst feedback = decision === 'revise' ? raw : '';\nreturn [{ json: { decision, publish_at, row_id: rowId, job_id: jobId, revision_feedback: feedback } }];"
+        "jsCode": "const item = $input.first().json;\nconst raw = (item.data?.text || item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim();\nconst lower = raw.toLowerCase();\n\nlet decision;\nlet publish_at = '';\n\nconst okMatch = lower.match(/^(ok|tak|yes)(\\s+(.+))?$/);\nif (okMatch) {\n  if (okMatch[3]) {\n    const datePart = okMatch[3].trim();\n    const m1 = datePart.match(/(\\d{4})-(\\d{2})-(\\d{2})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\n    const m2 = datePart.match(/(\\d{1,2})[.](\\d{1,2})[.](\\d{4})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\n    if (m1) {\n      publish_at = m1[1] + '-' + m1[2] + '-' + m1[3];\n      if (m1[4]) publish_at += ' ' + m1[4].padStart(2,'0') + ':' + (m1[5]||'00');\n      decision = 'approve';\n    } else if (m2) {\n      publish_at = m2[3] + '-' + m2[2].padStart(2,'0') + '-' + m2[1].padStart(2,'0');\n      if (m2[4]) publish_at += ' ' + m2[4].padStart(2,'0') + ':' + (m2[5]||'00');\n      decision = 'approve';\n    } else {\n      decision = 'approve_no_date';\n    }\n  } else {\n    decision = 'approve_no_date';\n  }\n} else if (['nie','no','odrzuc','odrzuć'].includes(lower)) {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Search Row ID').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\nconst feedback = decision === 'revise' ? raw : '';\nreturn [{ json: { decision, publish_at, row_id: rowId, job_id: jobId, revision_feedback: feedback } }];"
       },
       "id": "parse-response",
       "name": "Parse Response",
@@ -582,7 +608,7 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const items = $('Generate Content').all();\nif (!items.length) return [];\nconst rowId = $('Get Jobs To Process').first().json._id;\nconst slides = items.map(i => ({ channel: i.json.channel, body: i.json.generated_text }));\nconst generated_text = slides.map(s => '## ' + s.channel + '\\n' + s.body).join('\\n\\n---\\n\\n');\nreturn [{ json: { _id: rowId, generated_text, job_id: items[0].json.job_id } }];"
+        "jsCode": "const items = $('Generate Content').all();\nif (!items.length) return [];\nconst rowId = $('Search Row ID').first().json._id;\nconst slides = items.map(i => ({ channel: i.json.channel, body: i.json.generated_text }));\nconst generated_text = slides.map(s => '## ' + s.channel + '\\n' + s.body).join('\\n\\n---\\n\\n');\nreturn [{ json: { _id: rowId, generated_text, job_id: items[0].json.job_id } }];"
       },
       "id": "combine-save",
       "name": "Combine Generated Text",
@@ -781,6 +807,17 @@
       ]
     },
     "Get Jobs To Process": {
+      "main": [
+        [
+          {
+            "node": "Search Row ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Row ID": {
       "main": [
         [
           {
@@ -1100,6 +1137,32 @@
       },
       {
         "parameters": {
+          "operation": "search",
+          "tableName": "jobs",
+          "searchColumn": "job_id",
+          "searchTerm": "={{ $json.job_id }}",
+          "options": {}
+        },
+        "id": "search-row",
+        "name": "Search Row ID",
+        "type": "n8n-nodes-base.seaTable",
+        "typeVersion": 2,
+        "position": [
+          448,
+          0
+        ],
+        "credentials": {
+          "seaTableApi": {
+            "id": "hW2f85Vn1TyCow3D",
+            "name": "CG Marketing Agent"
+          }
+        },
+        "retryOnFail": true,
+        "maxTries": 2,
+        "waitBetweenTries": 8000
+      },
+      {
+        "parameters": {
           "operation": "update",
           "tableName": "jobs",
           "rowId": "={{ $json._id }}",
@@ -1236,7 +1299,7 @@
         "parameters": {
           "operation": "update",
           "tableName": "jobs",
-          "rowId": "={{ $('Get Jobs To Process').first().json._id }}",
+          "rowId": "={{ $('Search Row ID').first().json._id }}",
           "columnsUi": {
             "columnValues": [
               {
@@ -1344,7 +1407,7 @@
       },
       {
         "parameters": {
-          "jsCode": "const item = $input.first().json;\nconst raw = (item.data?.text || item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim();\nconst lower = raw.toLowerCase();\n\nlet decision;\nlet publish_at = '';\n\nconst okMatch = lower.match(/^(ok|tak|yes)(\\s+(.+))?$/);\nif (okMatch) {\n  if (okMatch[3]) {\n    const datePart = okMatch[3].trim();\n    const m1 = datePart.match(/(\\d{4})-(\\d{2})-(\\d{2})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\n    const m2 = datePart.match(/(\\d{1,2})[.](\\d{1,2})[.](\\d{4})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\n    if (m1) {\n      publish_at = m1[1] + '-' + m1[2] + '-' + m1[3];\n      if (m1[4]) publish_at += ' ' + m1[4].padStart(2,'0') + ':' + (m1[5]||'00');\n      decision = 'approve';\n    } else if (m2) {\n      publish_at = m2[3] + '-' + m2[2].padStart(2,'0') + '-' + m2[1].padStart(2,'0');\n      if (m2[4]) publish_at += ' ' + m2[4].padStart(2,'0') + ':' + (m2[5]||'00');\n      decision = 'approve';\n    } else {\n      decision = 'approve_no_date';\n    }\n  } else {\n    decision = 'approve_no_date';\n  }\n} else if (['nie','no','odrzuc','odrzuć'].includes(lower)) {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Get Jobs To Process').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\nconst feedback = decision === 'revise' ? raw : '';\nreturn [{ json: { decision, publish_at, row_id: rowId, job_id: jobId, revision_feedback: feedback } }];"
+          "jsCode": "const item = $input.first().json;\nconst raw = (item.data?.text || item.output || item.text || item.content || item.response || JSON.stringify(item)).toString().trim();\nconst lower = raw.toLowerCase();\n\nlet decision;\nlet publish_at = '';\n\nconst okMatch = lower.match(/^(ok|tak|yes)(\\s+(.+))?$/);\nif (okMatch) {\n  if (okMatch[3]) {\n    const datePart = okMatch[3].trim();\n    const m1 = datePart.match(/(\\d{4})-(\\d{2})-(\\d{2})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\n    const m2 = datePart.match(/(\\d{1,2})[.](\\d{1,2})[.](\\d{4})(?:\\s+(\\d{1,2}):(\\d{2}))?/);\n    if (m1) {\n      publish_at = m1[1] + '-' + m1[2] + '-' + m1[3];\n      if (m1[4]) publish_at += ' ' + m1[4].padStart(2,'0') + ':' + (m1[5]||'00');\n      decision = 'approve';\n    } else if (m2) {\n      publish_at = m2[3] + '-' + m2[2].padStart(2,'0') + '-' + m2[1].padStart(2,'0');\n      if (m2[4]) publish_at += ' ' + m2[4].padStart(2,'0') + ':' + (m2[5]||'00');\n      decision = 'approve';\n    } else {\n      decision = 'approve_no_date';\n    }\n  } else {\n    decision = 'approve_no_date';\n  }\n} else if (['nie','no','odrzuc','odrzuć'].includes(lower)) {\n  decision = 'reject';\n} else {\n  decision = 'revise';\n}\n\nconst rowId = $('Search Row ID').first().json._id;\nconst jobId = $('Get Jobs To Process').first().json.job_id;\nconst feedback = decision === 'revise' ? raw : '';\nreturn [{ json: { decision, publish_at, row_id: rowId, job_id: jobId, revision_feedback: feedback } }];"
         },
         "id": "parse-response",
         "name": "Parse Response",
@@ -1628,7 +1691,7 @@
       {
         "parameters": {
           "mode": "runOnceForAllItems",
-          "jsCode": "const items = $('Generate Content').all();\nif (!items.length) return [];\nconst rowId = $('Get Jobs To Process').first().json._id;\nconst slides = items.map(i => ({ channel: i.json.channel, body: i.json.generated_text }));\nconst generated_text = slides.map(s => '## ' + s.channel + '\\n' + s.body).join('\\n\\n---\\n\\n');\nreturn [{ json: { _id: rowId, generated_text, job_id: items[0].json.job_id } }];"
+          "jsCode": "const items = $('Generate Content').all();\nif (!items.length) return [];\nconst rowId = $('Search Row ID').first().json._id;\nconst slides = items.map(i => ({ channel: i.json.channel, body: i.json.generated_text }));\nconst generated_text = slides.map(s => '## ' + s.channel + '\\n' + s.body).join('\\n\\n---\\n\\n');\nreturn [{ json: { _id: rowId, generated_text, job_id: items[0].json.job_id } }];"
         },
         "id": "combine-save",
         "name": "Combine Generated Text",
@@ -1827,6 +1890,17 @@
         ]
       },
       "Get Jobs To Process": {
+        "main": [
+          [
+            {
+              "node": "Search Row ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Search Row ID": {
         "main": [
           [
             {
