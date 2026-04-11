@@ -54,6 +54,7 @@ Instrukcja Windsurf: `docs/windsurf-mcp-setup.md`
 - `.env`, `.env.local`, `.env.*.local` — NIGDY nie commituj
 - Klucze API trzymaj w zmiennych srodowiskowych lub `.env` (gitignored)
 - Przed kazdy push sprawdz `git diff --cached` pod katem sekretow
+- **Claude Code:** `.claude/settings.json` jest w repo — **bez tokenów, haseł i literałów kluczy API** (np. nie wklejaj `curl ... X-N8N-API-KEY: eyJ...`). Używaj `scripts/n8n/delete-execution.mjs` i `.env`. Osobiste / jednorazowe reguły `permissions` (np. Bash z konkretnym `row_id`) trzymaj w **`.claude/settings.local.json`** (plik **gitignored**).
 
 ## 5. Workflow: przed push
 
@@ -66,7 +67,8 @@ Instrukcja Windsurf: `docs/windsurf-mcp-setup.md`
    - `CLAUDE.md`
    - `.windsurf/rules/n8n-mcp-docs.md`
 4. Sprawdz czy `.env` / klucze API NIE sa w staged files (`git diff --cached --name-only | grep -i env`)
-5. Upewnij sie ze `.gitignore` jest aktualny
+5. Jesli zmieniasz `.claude/settings.json` — upewnij sie, ze w staged diff **nie ma** JWT, dlugich losowych kluczy ani `Authorization: Bearer` z wartoscia
+6. Upewnij sie ze `.gitignore` jest aktualny
 
 ## 6. Synchronizacja regul miedzy IDE
 
@@ -74,7 +76,7 @@ Gdy zmienisz zasady w jednym IDE:
 1. Zaktualizuj NAJPIERW `docs/shared-rules.md`
 2. Nastepnie zaktualizuj reguly w KAZDYM IDE:
    - **Cursor**: `.cursor/rules/n8n-mcp-docs.mdc`
-   - **Claude Code**: `CLAUDE.md`
+   - **Claude Code**: `CLAUDE.md` oraz wspoldzielone uprawnienia w `.claude/settings.json` (bez sekretow)
    - **Windsurf**: `.windsurf/rules/n8n-mcp-docs.md`
 3. Dodaj zmiany do jednego commita
 
@@ -86,6 +88,9 @@ Gdy zmienisz zasady w jednym IDE:
   mcp.json.example            # Szablon MCP config (bez sekretow)
   rules/
     n8n-mcp-docs.mdc          # Reguly Cursor
+.claude/
+  settings.json               # Claude Code — uprawnienia wspoldzielone (bez sekretow)
+  settings.local.json         # Opcjonalne nadpisania lokalne — gitignored
 .windsurf/
   rules/
     n8n-mcp-docs.md           # Reguly Windsurf

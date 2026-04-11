@@ -5,6 +5,5 @@
 .mcp.json
 .cursor/mcp.json
 
-# Claude Code — lokalne pliki (settings.json, pamięć); w repo tylko szablon
-.claude/**
-!.claude/settings.json.example
+# Claude Code — wyłącznie lokalne nadpisania (np. permissions z ID wierszy); nie commituj
+.claude/settings.local.json

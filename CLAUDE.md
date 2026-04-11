@@ -42,12 +42,17 @@ Nie ufaj wyłącznie pamięci treningowej — **potwierdź w query-docs**.
 - Z `N8N_API_URL` + `N8N_API_KEY`: zarządzanie instancją
 - Nie commituj kluczy API
 
+### Ustawienia projektu (`.claude/`)
+
+- **`settings.json`** — w repozytorium, wspólne dla zespołu. **Nie umieszczaj tu sekretów** (tokenów API, haseł, `curl` z kluczem w ścieżce). Wywołania z kluczem: `.env` + skrypty w `scripts/n8n/`.
+- **`settings.local.json`** — opcjonalne nadpisania tylko u Ciebie (np. dodatkowe `permissions.allow` z konkretnymi ID wierszy SeaTable). Plik jest w **`.gitignore`** — nie trafia na push. Szczegóły: `docs/shared-rules.md` (sekcja 4).
+
 ## Workflow: przed push
 
 **ZAWSZE** przed `git push`:
 1. Sprawdź spójność zmian (`git diff --stat`)
 2. Upewnij się, że `docs/shared-rules.md` jest aktualny jeśli zmieniły się zasady
-3. Zsynchronizuj reguły IDE — zaktualizuj `.cursor/rules/`, `CLAUDE.md`, `.windsurf/rules/` jeśli zmieniły się wspólne zasady
-4. Sprawdź czy `.env` / klucze API nie są w staged files
+3. Zsynchronizuj reguły IDE — zaktualizuj `.cursor/rules/`, `CLAUDE.md`, `.windsurf/rules/` oraz ewentualnie `.claude/settings.json` (bez sekretów) jeśli zmieniły się wspólne zasady
+4. Sprawdź czy `.env` / klucze API nie są w staged files ani w `.claude/settings.json`
 
 Nazewnictwo branchy i format commitów (inicjały, typy `feat`/`fix`/…): **sekcja 8** w `docs/shared-rules.md`.
