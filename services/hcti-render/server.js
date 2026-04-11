@@ -12,6 +12,7 @@ async function getBrowser() {
   if (!browser || !browser.connected) {
     browser = await puppeteer.launch({
       headless: true,
+      protocolTimeout: 180_000,
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
@@ -42,13 +43,18 @@ app.post("/render", async (req, res) => {
   try {
     const b = await getBrowser();
     page = await b.newPage();
+    page.setDefaultNavigationTimeout(120_000);
+    page.setDefaultTimeout(120_000);
     await page.setViewport({ width: Number(width), height: Number(height) });
-    await page.setContent(fullHtml, { waitUntil: "networkidle0" });
+    // "networkidle0" często nie kończy się przy fontach CDN / dużym base64 — "load" + krótki sleep wystarcza do PNG.
+    await page.setContent(fullHtml, { waitUntil: "load", timeout: 120_000 });
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 
     const imgFormat = format === "jpeg" || format === "jpg" ? "jpeg" : "png";
     const screenshot = await page.screenshot({
       type: imgFormat,
       fullPage: Boolean(fullPage),
+      timeout: 120_000,
     });
 
     const buf = Buffer.isBuffer(screenshot) ? screenshot : Buffer.from(screenshot);

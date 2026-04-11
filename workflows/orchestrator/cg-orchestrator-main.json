@@ -82,6 +82,10 @@
             {
               "columnName": "status",
               "columnValue": "generating"
+            },
+            {
+              "columnName": "updated_at",
+              "columnValue": "={{ $now.toISO() }}"
             }
           ]
         }
@@ -213,6 +217,10 @@
             {
               "columnName": "status",
               "columnValue": "awaiting_approval"
+            },
+            {
+              "columnName": "updated_at",
+              "columnValue": "={{ $now.toISO() }}"
             }
           ]
         }
@@ -429,6 +437,10 @@
             {
               "columnName": "approval_status",
               "columnValue": "rejected"
+            },
+            {
+              "columnName": "updated_at",
+              "columnValue": "={{ $now.toISO() }}"
             }
           ]
         }
@@ -462,6 +474,10 @@
             {
               "columnName": "revision_feedback",
               "columnValue": "={{ $json.revision_feedback }}"
+            },
+            {
+              "columnName": "updated_at",
+              "columnValue": "={{ $now.toISO() }}"
             }
           ]
         }
@@ -688,6 +704,10 @@
             {
               "columnName": "final_slides",
               "columnValue": "={{ $json.final_slides }}"
+            },
+            {
+              "columnName": "updated_at",
+              "columnValue": "={{ $now.toISO() }}"
             }
           ]
         }
@@ -1124,6 +1144,10 @@
               {
                 "columnName": "status",
                 "columnValue": "generating"
+              },
+              {
+                "columnName": "updated_at",
+                "columnValue": "={{ $now.toISO() }}"
               }
             ]
           }
@@ -1255,6 +1279,10 @@
               {
                 "columnName": "status",
                 "columnValue": "awaiting_approval"
+              },
+              {
+                "columnName": "updated_at",
+                "columnValue": "={{ $now.toISO() }}"
               }
             ]
           }
@@ -1471,6 +1499,10 @@
               {
                 "columnName": "approval_status",
                 "columnValue": "rejected"
+              },
+              {
+                "columnName": "updated_at",
+                "columnValue": "={{ $now.toISO() }}"
               }
             ]
           }
@@ -1504,6 +1536,10 @@
               {
                 "columnName": "revision_feedback",
                 "columnValue": "={{ $json.revision_feedback }}"
+              },
+              {
+                "columnName": "updated_at",
+                "columnValue": "={{ $now.toISO() }}"
               }
             ]
           }
@@ -1730,6 +1766,10 @@
               {
                 "columnName": "final_slides",
                 "columnValue": "={{ $json.final_slides }}"
+              },
+              {
+                "columnName": "updated_at",
+                "columnValue": "={{ $now.toISO() }}"
               }
             ]
           }

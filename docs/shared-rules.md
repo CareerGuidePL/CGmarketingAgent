@@ -113,7 +113,7 @@ scripts/
 workflows/                    # Eksporty workflow JSON (git + snapshoty w versions/)
   ingest/                     # cg-ingest-* (+ opcjonalnie versions/<slug>/)
   orchestrator/               # cg-orchestrator-*
-  hitl/                       # cg-hitl-*
+  hitl/                       # opcjonalnie cg-hitl-* (obecnie pusto — HITL w orchestratorze)
   generate/                   # cg-gen-*
   distribute/                 # cg-distribute-*
   store/                      # cg-store-*

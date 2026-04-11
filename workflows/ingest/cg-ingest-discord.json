@@ -180,6 +180,14 @@
             {
               "columnName": "status",
               "columnValue": "={{ $json.status }}"
+            },
+            {
+              "columnName": "created_at",
+              "columnValue": "={{ $json.created_at || $now.toISO() }}"
+            },
+            {
+              "columnName": "updated_at",
+              "columnValue": "={{ $now.toISO() }}"
             }
           ]
         }
@@ -324,6 +332,10 @@
             {
               "columnName": "assets",
               "columnValue": "={{ JSON.stringify([{ kind: $('Filter New Messages').item.json._attachment_filename.match(/\\.(jpg|jpeg|png|gif|webp)$/i) ? 'image' : 'file', url: $('Filter New Messages').item.json._attachment_url, filename: $('Filter New Messages').item.json._attachment_filename, drive_file_id: $json.id }]) }}"
+            },
+            {
+              "columnName": "updated_at",
+              "columnValue": "={{ $now.toISO() }}"
             }
           ]
         }
@@ -683,6 +695,14 @@
               {
                 "columnName": "status",
                 "columnValue": "={{ $json.status }}"
+              },
+              {
+                "columnName": "created_at",
+                "columnValue": "={{ $json.created_at || $now.toISO() }}"
+              },
+              {
+                "columnName": "updated_at",
+                "columnValue": "={{ $now.toISO() }}"
               }
             ]
           }
@@ -827,6 +847,10 @@
               {
                 "columnName": "assets",
                 "columnValue": "={{ JSON.stringify([{ kind: $('Filter New Messages').item.json._attachment_filename.match(/\\.(jpg|jpeg|png|gif|webp)$/i) ? 'image' : 'file', url: $('Filter New Messages').item.json._attachment_url, filename: $('Filter New Messages').item.json._attachment_filename, drive_file_id: $json.id }]) }}"
+              },
+              {
+                "columnName": "updated_at",
+                "columnValue": "={{ $now.toISO() }}"
               }
             ]
           }

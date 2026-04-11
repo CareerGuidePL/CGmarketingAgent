@@ -69,7 +69,7 @@ Główny magazyn `job` to **Seatable** (free tier, REST API, relacje między tab
 | Kolumna | Typ | Opcje / uwagi |
 |---|---|---|
 | `job_id` | Text | UUID, klucz główny |
-| `crated_at` | Date | ⚠️ literówka w nazwie (powinno być `created_at`) |
+| `created_at` | Date | Czas utworzenia (ingest: timestamp Discord; ustawiane w workflow) |
 | `updated_at` | Date | |
 | `source` | Single Select | `discord` |
 | `content_type` | Single Select | `post`, `story`, `video_script`, `image` |

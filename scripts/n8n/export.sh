@@ -35,6 +35,9 @@ const apiUrl = process.env.N8N_EXPORT_API_URL;
 const apiKey = process.env.N8N_EXPORT_API_KEY;
 const workflowsDir = path.resolve(process.env.N8N_EXPORT_WORKFLOWS_DIR);
 
+/** Nazwy workflowów nie eksportowanych do repo (legacy / usunięte z git). */
+const SKIP_EXPORT_NAMES = new Set(['cg-hitl-discord-reply']);
+
 function resolveDir(name) {
   const n = name.toLowerCase();
   if (n.includes('ingest')) return 'ingest';
@@ -69,6 +72,10 @@ function fetchWorkflow(id) {
   let count = 0;
 
   for (const wf of workflows) {
+    if (SKIP_EXPORT_NAMES.has(String(wf.name || '').toLowerCase())) {
+      console.log('  skip (legacy): ' + wf.name);
+      continue;
+    }
     const full = await fetchWorkflow(wf.id);
     // Strip credential secrets
     for (const node of (full.nodes || [])) {

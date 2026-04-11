@@ -92,7 +92,7 @@ Zamiast realizować wszystkie fazy naraz — **krótkie iteracje**, przyrost dzi
 | Iteracja | Zakres | Status |
 |----------|--------|--------|
 | **I0** | Faza 0: lokalne n8n, konwencje, `.env`; opcjonalnie tunel | **done** — Docker, `.env.example`, onboarding, konwencje git, reguły IDE |
-| **I1** | Faza 1–2: credential'e, kontrakt `job`, jedno wejście (Discord) + Seatable/Drive | **done** — kontrakt `job`, rejestr credentiali, Seatable; w n8n i repo: `cg-ingest-discord`, `cg-hitl-discord-reply`; API n8n + eksport workflowów do `workflows/` |
+| **I1** | Faza 1–2: credential'e, kontrakt `job`, jedno wejście (Discord) + Seatable/Drive | **done** — kontrakt `job`, rejestr credentiali, Seatable; w n8n i repo: `cg-ingest-discord` (+ później orchestrator/gen); API n8n + eksport workflowów do `workflows/` |
 | **I2** | Faza 3: ingest → orchestrator → HITL lub tania generacja tekstu | **done** — `cg-orchestrator-main` + `cg-gen-content` (Gemini), HITL przez Discord `sendAndWait`, widok `to-process` w Seatable (filtr na `ingested`/`revision_needed`), `concurrency: 1` w orchestratorze (brak równoległych runów); opcjonalnie twardszy rozdział **input vs feedback** (drugi kanał / reguły — patrz [decisions-three-variants.md § 4](decisions-three-variants.md)) |
 | **I3** | Jeden kanał social; scheduler w wersji minimalnej (np. ręczny trigger) | planned |
 | **I4+** | Faza 4 (agent, HTCI, pamięć), pełny scheduler, kolejne kanały, Faza 6 | planned |
@@ -109,9 +109,9 @@ Po **I2–I3** warto **zatrzymać się** na ocenę, zanim doda się drogie model
 
 ## Stan implementacji i otwarte problemy (2026-04-09)
 
-**Instancja n8n (VPS lub lokalnie):** ten sam zestaw workflowów: **cg-ingest-discord**, **cg-gen-content** (sub-workflow), **cg-orchestrator-main** (schedule co 2 min, widok Seatable `to-process`, **Mark Generating** → `generating`, generacja, `awaiting_approval`, preview na Discordzie), **cg-hitl-discord-reply** (legacy: polling — zwykle wyłączony przy HITL w orchestratorze). Skrypty `N8N_API_*` w `.env` powinny wskazywać **aktywną** instancję (dla zespołu: URL VPS).
+**Instancja n8n (VPS lub lokalnie):** **cg-ingest-discord**, **cg-gen-content** (sub-workflow), **cg-orchestrator-main** (schedule, widok `to-process`, generacja, HITL na Discordzie przez `sendAndWait`). **cg-hitl-discord-reply** (polling SeaTable) — **usunięty** z repo i z nowych wdrożeń; nie używać na serwerze. Skrypty `N8N_API_*` w `.env` powinny wskazywać **aktywną** instancję (dla zespołu: URL VPS).
 
-**Repozytorium `workflows/`:** cztery eksporty zsynchronizowane ze skryptem `scripts/n8n/export.sh`: `ingest/`, `hitl/`, `orchestrator/`, `generate/`.
+**Repozytorium `workflows/`:** trzy główne eksporty ze skryptem `scripts/n8n/export.sh`: `ingest/`, `orchestrator/`, `generate/` (katalog `hitl/` zarezerwowany — patrz `workflows/hitl/README.md`).
 
 **Ustalenia operacyjne (debug):**
 
@@ -261,7 +261,7 @@ Matryca kont i integracji w **n8n Credentials** (osobno dev/prod jeśli potrzeba
 - [x] **VPS (2026-04):** instancja zespołu pod **`https://cg-agent.n8n.crait.pro`**, `hcti-render` w stacku; workflowy zaimportowane (`create-workflows-remote.mjs` lub ręczny import).
 - [x] Onboarding — [onboarding-local-setup.md](onboarding-local-setup.md).
 - [x] Wersjonowanie workflow — struktura `workflows/`, skrypty eksport/import ([shared-rules.md](shared-rules.md) § 9).
-- [x] Eksport workflow z n8n do repo — **cztery** pliki: ingest, HITL, orchestrator, gen-content (`scripts/n8n/export.sh`, `N8N_API_KEY`).
+- [x] Eksport workflow z n8n do repo — **trzy** pliki: ingest, orchestrator, gen-content (`scripts/n8n/export.sh`, `N8N_API_KEY`; legacy HITL reply usunięty).
 - [x] Zaktualizować `job-contract.md` — Seatable jako źródło prawdy, opis aktualnej struktury tabel.
 - [x] Opisać istniejącą bazę Seatable (tabele `jobs` + `config`, kolumny, widoki) w `job-contract.md`.
 
@@ -281,7 +281,7 @@ Gdy będzie dostępna maszyna z działającymi workflow w n8n:
 4. **Zrób commit:**
    ```bash
    git add workflows/
-   git commit -m "[MS] feat: export existing n8n workflows (Discord ingest, HITL reply)"
+   git commit -m "[MS] feat: export n8n workflows (ingest, orchestrator, gen-content)"
    git push
    ```
 5. **Uzupełnij stan Seatable:** jeśli baza istnieje — opisz strukturę tabel w `job-contract.md` (tabele, kolumny, typy, relacje) i zaktualizuj uwagi implementacyjne (Sheets → Seatable).

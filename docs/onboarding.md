@@ -56,7 +56,7 @@ Utworz w n8n (Settings → Credentials):
 Baza `CG Marketing Agent` powinna miec:
 
 **Tabela `jobs`:**
-- `job_id` (Text), `crated_at` (Date), `updated_at` (Date), `source` (Single Select), `content_type` (Single Select), `channels` (Link), `approval_status` (Single Select: pending/approved/rejected), `publish_at` (Date), `status` (Single Select: ingested/approved_notified/rejected_notified), `assets` (Long Text), `prompt_context` (Long Text), `discord_msg_id` (Text), `raw_text` (Long Text), `author` (Text)
+- `job_id` (Text), `created_at` (Date), `updated_at` (Date), `source` (Single Select), `content_type` (Single Select), `channels` (Link), `approval_status` (Single Select: pending/approved/rejected), `publish_at` (Date), `status` (Single Select: ingested/approved_notified/rejected_notified), `assets` (Long Text), `prompt_context` (Long Text), `discord_msg_id` (Text), `raw_text` (Long Text), `author` (Text)
 
 **Widoki w `jobs`:**
 - `approved-pending` — filtr: `approval_status = approved AND status = ingested`
@@ -70,8 +70,9 @@ Baza `CG Marketing Agent` powinna miec:
 
 Workflow sa tworzone przez MCP (Claude Code) lub recznie. Aktualnie:
 
-- **`cg-ingest-discord`** — polling Discord co 5 min → zapis do SeaTable
-- **`cg-hitl-discord-reply`** — polling SeaTable co 2 min → odpowiedz na Discord
+- **`cg-ingest-discord`** — polling Discord → zapis do SeaTable
+- **`cg-orchestrator-main`** — kolejka jobów, generacja, HITL na Discordzie (`sendAndWait`)
+- **`cg-gen-content`** — sub-workflow generacji (wywoływany z orchestratora)
 
 Jesli workflow nie istnieja — poproś Claude Code o ich utworzenie (ma narzedzia MCP do tego).
 

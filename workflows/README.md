@@ -2,7 +2,7 @@
 
 Eksporty workflow z n8n przechowywane w repozytorium: **git** + opcjonalne **snapshoty** w `versions/` (szczegoly: [shared-rules.md sekcja 9](../docs/shared-rules.md)).
 
-**Stan na 2026-04-11:** w repo cztery workflowy (`cg-ingest-discord`, `cg-hitl-discord-reply`, `cg-orchestrator-main`, `cg-gen-content` w katalogach `ingest/`, `hitl/`, `orchestrator/`, `generate/`). **Główna instancja zespołu:** n8n na **VPS** (`https://cg-agent.n8n.crait.pro`) — `id` workflowów na serwerze mogą różnić się od pól `id` w plikach JSON do czasu ponownego eksportu (`scripts/n8n/export.sh`). **Lokalny** Docker nadal służy do dev. Szczegóły: [roadmap.md](../docs/roadmap.md).
+**Stan na 2026-04-11:** w repo **trzy** aktywne workflowy: `cg-ingest-discord`, `cg-orchestrator-main`, `cg-gen-content` (`ingest/`, `orchestrator/`, `generate/`). Katalog `hitl/` jest zarezerwowany (legacy `cg-hitl-discord-reply` usunięty — HITL w orchestratorze). **Główna instancja zespołu:** n8n na **VPS** (`https://cg-agent.n8n.crait.pro`) — `id` workflowów na serwerze mogą różnić się od pól `id` w plikach JSON do czasu ponownego eksportu (`scripts/n8n/export.sh`). **Lokalny** Docker nadal służy do dev. Szczegóły: [roadmap.md](../docs/roadmap.md).
 
 ## Struktura katalogów
 
@@ -10,7 +10,7 @@ Eksporty workflow z n8n przechowywane w repozytorium: **git** + opcjonalne **sna
 |---------|--------|--------------------|
 | `ingest/` | Wejscia: Discord, Mail -> job | `cg-ingest-*` |
 | `orchestrator/` | Routing, glowna logika | `cg-orchestrator-*` |
-| `hitl/` | Human in the Loop — zatwierdzenia | `cg-hitl-*` |
+| `hitl/` | Zarezerwowane (HITL w orchestratorze); patrz [README](hitl/README.md) | `cg-hitl-*` |
 | `generate/` | Generacja tresci (AI, HTCI) | `cg-gen-*` |
 | `distribute/` | Publikacja na kanaly social | `cg-distribute-*` |
 | `store/` | Assety, Drive, Seatable | `cg-store-*` |

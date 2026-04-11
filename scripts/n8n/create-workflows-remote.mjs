@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Tworzy workflowy na instancji n8n (POST), gdy nie istnieją jeszcze (PUT by zwrócił 404).
- * Kolejność: cg-gen-content → ingest → hitl → orchestrator (orchestrator dostaje zmapowane ID subworkflowu).
+ * Kolejność: cg-gen-content → ingest → orchestrator (orchestrator dostaje zmapowane ID subworkflowu).
  * Wymaga N8N_API_URL, N8N_API_KEY w .env.
  *
  * Użycie: node scripts/n8n/create-workflows-remote.mjs
@@ -18,7 +18,6 @@ const ROOT = path.join(__dirname, "..", "..");
 const STEPS = [
   { rel: "workflows/generate/cg-gen-content.json", oldId: "z7FIfQqHzQGJW4ib" },
   { rel: "workflows/ingest/cg-ingest-discord.json", oldId: "MvyZHtercUEd3cVb" },
-  { rel: "workflows/hitl/cg-hitl-discord-reply.json", oldId: "QV6IEXUG6GY9DM3l" },
   { rel: "workflows/orchestrator/cg-orchestrator-main.json", oldId: "ov4KpAcVoAuWnEPT" },
 ];
 
