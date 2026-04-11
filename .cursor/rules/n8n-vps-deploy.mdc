@@ -1,0 +1,40 @@
+---
+description: Po zmianach workflow JSON — git push oraz wdrożenie na VPS (n8n API)
+alwaysApply: true
+---
+
+# n8n — wdrożenie workflowów na VPS (obowiązkowe dla agenta)
+
+Gdy użytkownik prosi o **wypchnięcie** / **wdrożenie** / **zsynchronizowanie** workflowów z serwerem (VPS, produkcja, instancja zespołu), albo gdy **samodzielnie** commitujesz zmiany w plikach `workflows/**/*.json`:
+
+## Co zrobić (w tej kolejności)
+
+1. **`git push`** do `origin` (jeśli jeszcze nie zrobione).
+2. **Natychmiast uruchom wdrożenie na instancję n8n** — nie odsyłaj użytkownika wyłącznie do ręcznego importu w UI:
+   ```bash
+   cd /ścieżka/do/CG-agent
+   node scripts/n8n/push-workflows.mjs
+   ```
+3. Aby wypchnąć **konkretne** pliki (np. tylko jeden workflow):
+   ```bash
+   node scripts/n8n/push-workflows.mjs workflows/generate/cg-gen-content.json
+   ```
+
+## Wymagania
+
+- W **`/.env`** (nie commituj): `N8N_API_URL` (np. `https://cg-agent.n8n.crait.pro`, bez końcowego `/`) oraz `N8N_API_KEY` (Settings → API w n8n).
+- Skrypt **`scripts/n8n/push-workflows.mjs`** robi `PUT /api/v1/workflows/:id` — workflow w repo musi mieć to samo **`id`**, co rekord na serwerze.
+
+## Gdy `push-workflows` zwróci błąd
+
+- **401 / 403** — sprawdź klucz API i URL w `.env`.
+- **404** — `id` w JSON nie istnieje na tej instancji (np. zła baza); wtedy ewentualnie `create-workflows-remote.mjs` lub import ręczny — **napisz to wprost** po jednej próbie naprawy.
+- **Sieć** — spróbuj ponownie; nie rezygnuj po pierwszym timeoucie.
+
+## Zgodność z repo
+
+- Domyślna lista plików w skrypcie: orchestrator, `cg-gen-content`, ingest Discord. Po dodaniu **nowego** workflowu do repo dopisz go do wywołania albo rozszerz domyślne ścieżki w `push-workflows.mjs`.
+
+## Aktualizacja `activeVersion` w eksportach
+
+- Eksporty n8n czasem zawierają **`activeVersion.nodes`** obok **`nodes`**. Przy edycji workflowów w repo utrzymuj **spójność** (oba lub tylko `nodes` — ale po `PUT` przez API serwer i tak korzysta z wgranej definicji). Jeśli użytkownik importuje z pliku, plik musi być spójny; przy pushu przez API decyduje payload ze skryptu (`stripForApi`).

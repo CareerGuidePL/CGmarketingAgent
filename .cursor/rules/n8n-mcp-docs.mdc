@@ -54,6 +54,8 @@ Przy projektowaniu i edycji workflowów: **preferuj natywne** węzły n8n; **Cod
 
 Workflow eksportowane z n8n do `workflows/<typ>/` (jeden glówny plik JSON na workflow). Snapshoty zatwierdzonych wersji przed większą zmianą: `workflows/<typ>/versions/<slug>/<etykieta>.json`. Szczegóły: `docs/shared-rules.md` → sekcja 9. Skrypty: `scripts/n8n/export.sh`, `scripts/n8n/import.sh` (indeks: `scripts/README.md`).
 
+**Wdrożenie na VPS po zmianach w JSON:** zasada **`.cursor/rules/n8n-vps-deploy.mdc`** — po `git push` agent uruchamia `node scripts/n8n/push-workflows.mjs` (`.env`: `N8N_API_URL`, `N8N_API_KEY`), zamiast odsyłać wyłącznie do ręcznego importu.
+
 ## 6. Wspólne zasady projektu
 
 Stosuj **zawsze** zasady z `docs/shared-rules.md` — to źródło prawdy dla wszystkich IDE (Cursor, Claude Code, Windsurf).
