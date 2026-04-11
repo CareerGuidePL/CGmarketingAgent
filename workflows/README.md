@@ -19,7 +19,7 @@ Eksporty workflow z n8n przechowywane w repozytorium: **git** + opcjonalne **sna
 | `analytics/` | Statystyki, raporty | `cg-analytics-*` |
 | `_archive/` | Porzucone / bardzo stare (opcjonalnie) | — |
 
-W kazdym katalogu typu (np. `ingest/`) **glowny** plik `<nazwa>.json` to biezaca wersja (nadpisywana przez `n8n-export.sh`). **Snapshoty** zatwierdzonych wersji przed wiekszymi zmianami: `ingest/versions/<nazwa>/<etykieta>.json` (np. `2026-04-09-approved.json`). Pelna procedura: [shared-rules.md § 9](../docs/shared-rules.md).
+W kazdym katalogu typu (np. `ingest/`) **glowny** plik `<nazwa>.json` to biezaca wersja (nadpisywana przez `scripts/n8n/export.sh`). **Snapshoty** zatwierdzonych wersji przed wiekszymi zmianami: `ingest/versions/<nazwa>/<etykieta>.json` (np. `2026-04-09-approved.json`). Pelna procedura: [shared-rules.md § 9](../docs/shared-rules.md).
 
 ## Konwencje
 
@@ -32,7 +32,7 @@ W kazdym katalogu typu (np. `ingest/`) **glowny** plik `<nazwa>.json` to biezaca
 ### Eksport wszystkich workflow (wymaga N8N_API_KEY w .env)
 
 ```bash
-bash scripts/n8n-export.sh
+bash scripts/n8n/export.sh
 ```
 
 ### Eksport reczny (pojedynczy workflow)
@@ -48,5 +48,5 @@ W n8n: gorny pasek -> Import from file -> wybierz JSON z odpowiedniego katalogu.
 Lub przez API:
 
 ```bash
-bash scripts/n8n-import.sh workflows/ingest/cg-ingest-discord.json
+bash scripts/n8n/import.sh workflows/ingest/cg-ingest-discord.json
 ```

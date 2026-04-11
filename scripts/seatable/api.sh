@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Seatable API helper — reusable functions for CG Marketing Agent base.
-# Usage: bash scripts/seatable-api.sh <command> [args]
+# Usage: bash scripts/seatable/api.sh <command> [args]
 #
 # Requirements: .env with SEATABLE_API_TOKEN (base API token, not account token)
 # Docs: https://api.seatable.io/reference
@@ -14,7 +14,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Load .env
 if [[ -f "$PROJECT_DIR/.env" ]]; then
@@ -169,7 +169,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     help|*)
       echo "Seatable API helper for CG Marketing Agent"
       echo ""
-      echo "Usage: seatable-api.sh <command> [args]"
+      echo "Usage: bash scripts/seatable/api.sh <command> [args]"
       echo ""
       echo "Commands:"
       echo "  auth                              Show auth info (debug)"

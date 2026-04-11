@@ -116,7 +116,8 @@
             "channels": "={{ (v => v == null || v === '' ? '[\"linkedin\",\"facebook\",\"instagram\"]' : typeof v === 'string' ? v : JSON.stringify(v))($('Get Jobs To Process').first().json.channels) }}",
             "content_type": "={{ $('Get Jobs To Process').first().json.content_type }}",
             "revision_feedback": "={{ $('Get Jobs To Process').first().json.revision_feedback }}",
-            "assets": "={{ $('Get Jobs To Process').first().json.assets }}"
+            "assets": "={{ $('Get Jobs To Process').first().json.assets }}",
+            "slide_theme": "={{ $('Get Jobs To Process').first().json.slide_theme }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -168,6 +169,15 @@
             {
               "id": "assets",
               "displayName": "assets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "slide_theme",
+              "displayName": "slide_theme",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -1148,7 +1158,8 @@
               "channels": "={{ (v => v == null || v === '' ? '[\"linkedin\",\"facebook\",\"instagram\"]' : typeof v === 'string' ? v : JSON.stringify(v))($('Get Jobs To Process').first().json.channels) }}",
               "content_type": "={{ $('Get Jobs To Process').first().json.content_type }}",
               "revision_feedback": "={{ $('Get Jobs To Process').first().json.revision_feedback }}",
-              "assets": "={{ $('Get Jobs To Process').first().json.assets }}"
+              "assets": "={{ $('Get Jobs To Process').first().json.assets }}",
+              "slide_theme": "={{ $('Get Jobs To Process').first().json.slide_theme }}"
             },
             "matchingColumns": [],
             "schema": [
@@ -1200,6 +1211,15 @@
               {
                 "id": "assets",
                 "displayName": "assets",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "slide_theme",
+                "displayName": "slide_theme",
                 "required": false,
                 "defaultMatch": false,
                 "display": true,

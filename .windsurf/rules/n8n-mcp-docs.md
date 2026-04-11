@@ -34,7 +34,7 @@ Preferuj natywne wezly n8n; Code i HTTP Request gdy nie ma odpowiedniego wezla a
 
 ## 4. Wersjonowanie workflow
 
-Workflow eksportowane z n8n do `workflows/<typ>/` (jeden glowny plik na workflow). Snapshoty zatwierdzonych wersji: `workflows/<typ>/versions/<slug>/<etykieta>.json`. Szczegoly: `docs/shared-rules.md` — sekcja 9. Skrypty: `scripts/n8n-export.sh`, `scripts/n8n-import.sh`.
+Workflow eksportowane z n8n do `workflows/<typ>/` (jeden glowny plik na workflow). Snapshoty zatwierdzonych wersji: `workflows/<typ>/versions/<slug>/<etykieta>.json`. Szczegoly: `docs/shared-rules.md` — sekcja 9. Skrypty: `scripts/n8n/export.sh`, `scripts/n8n/import.sh` (indeks: `scripts/README.md`).
 
 ## 5. Wspolne zasady projektu
 

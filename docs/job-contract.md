@@ -48,6 +48,7 @@ Jednolity payload między workflowami (`Execute Workflow`, webhooki): orchestrat
 | `source` | string | Skrót wejścia: `discord`, `mail`, … |
 | `content_type` | string | Np. `post`, `story`, `video_script` — doprecyzowanie w kolejnych iteracjach. |
 | `channels` | string[] | Docelowe kanały wyjścia (w I1 często jeden element). |
+| `slide_theme` | string (opcjonalnie) | Zarezerwowane na przyszłość. **Obecnie** `cg-gen-content` zawsze renderuje **ciemny** motyw slajdów; wartość pola jest ignorowana. |
 | `assets` | array | Odniesienia do plików (Drive, URL); struktura wewnętrzna może się rozrosnąć. |
 | `channel_specs` | array | Ustawienia per kanał (ton, limity, format). |
 | `approval_status` | string | Np. `pending`, `approved`, `rejected` — pod HITL. |
@@ -73,6 +74,7 @@ Główny magazyn `job` to **Seatable** (free tier, REST API, relacje między tab
 | `source` | Single Select | `discord` |
 | `content_type` | Single Select | `post`, `story`, `video_script`, `image` |
 | `channels` | Multiple Select | `facebook`, `linkedin`, `instagram`, `x`, `youtube`, `tiktok` — ingest Discord zapisuje domyślnie JSON tablicy `["linkedin","facebook","instagram"]`; jeśli węzeł SeaTable wymaga innego formatu, popraw `columnValue` w `cg-ingest-discord` |
+| `slide_theme` | Single Select lub Text (opcjonalnie) | Obecnie **nie zmienia** wyglądu PNG (zawsze ciemny motyw). Pole i parsowanie w Discordzie mogą pozostać w bazie na później; generator slajdów ignoruje wartość. |
 | `approval_status` | Single Select | `pending`, `approved`, `rejected` |
 | `publish_at` | Date | Scheduler (Faza 5) |
 | `status` | Single Select | `ingested`, `revision_needed`, `generating`, `awaiting_approval`, `approved`, `rejected`, `publishing`, `published`, `failed`, `retracted`, `approved_notified`, `rejected_notified` |

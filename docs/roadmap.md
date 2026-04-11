@@ -102,7 +102,7 @@ Po **I2–I3** warto **zatrzymać się** na ocenę, zanim doda się drogie model
 
 ## Stan implementacji i otwarte problemy (2026-04-10)
 
-**I3 (częściowo):** `cg-gen-content` generuje **osobne slajdy PNG** per kanał (JSON z LLM → parse → render HCTI); orchestrator po **ok** uploaduje pliki na **Google Drive** (folder **generated**, ID w węźle **Upload Approved Slide**), zapisuje **`final_slides`** + **`publish_at`** w Seatable; brak `publish_at` w job → **Discord Ask Publish Date**. Ingest Discord: domyślne `channels` (linkedin, facebook, instagram), opcjonalny parse daty z treści. W Seatable **dodać kolumnę** `final_slides` (Long Text) — opis: [job-contract.md](job-contract.md). Wypchnięcie JSON na instancję: `node scripts/n8n-push-workflows.mjs` (wymaga `N8N_API_*` w `.env`).
+**I3 (częściowo):** `cg-gen-content` generuje **osobne slajdy PNG** per kanał (JSON z LLM → parse → render HCTI); orchestrator po **ok** uploaduje pliki na **Google Drive** (folder **generated**, ID w węźle **Upload Approved Slide**), zapisuje **`final_slides`** + **`publish_at`** w Seatable; brak `publish_at` w job → **Discord Ask Publish Date**. Ingest Discord: domyślne `channels` (linkedin, facebook, instagram), opcjonalny parse daty z treści. W Seatable **dodać kolumnę** `final_slides` (Long Text) — opis: [job-contract.md](job-contract.md). Wypchnięcie JSON na instancję: `node scripts/n8n/push-workflows.mjs` (wymaga `N8N_API_*` w `.env`).
 
 ---
 
@@ -110,7 +110,7 @@ Po **I2–I3** warto **zatrzymać się** na ocenę, zanim doda się drogie model
 
 **Instancja lokalna n8n** (np. port 5679, `N8N_API_*` w `.env`): działają workflowy **cg-ingest-discord**, **cg-gen-content** (sub-workflow), **cg-orchestrator-main** (schedule co 2 min, lista z widoku Seatable `to-process`, **Mark Generating** → `generating`, potem generacja, zapis `awaiting_approval`, preview na Discordzie), **cg-hitl-discord-reply** (legacy: polling widoków — zwykle wyłączony, gdy HITL jest w orchestratorze).
 
-**Repozytorium `workflows/`:** cztery eksporty zsynchronizowane ze skryptem `scripts/n8n-export.sh`: `ingest/`, `hitl/`, `orchestrator/`, `generate/`.
+**Repozytorium `workflows/`:** cztery eksporty zsynchronizowane ze skryptem `scripts/n8n/export.sh`: `ingest/`, `hitl/`, `orchestrator/`, `generate/`.
 
 **Ustalenia operacyjne (debug):**
 
@@ -259,7 +259,7 @@ Numer **8** odzwierciedla kolejność logiczną: **dopiero po domknięciu funkcj
 - [x] Uruchomienie lokalnego n8n (Faza 0 / **I0**) — `docker compose up -d`; działa na porcie 5679.
 - [x] Onboarding — [onboarding-local-setup.md](onboarding-local-setup.md).
 - [x] Wersjonowanie workflow — struktura `workflows/`, skrypty eksport/import ([shared-rules.md](shared-rules.md) § 9).
-- [x] Eksport workflow z n8n do repo — **cztery** pliki: ingest, HITL, orchestrator, gen-content (`scripts/n8n-export.sh`, `N8N_API_KEY`).
+- [x] Eksport workflow z n8n do repo — **cztery** pliki: ingest, HITL, orchestrator, gen-content (`scripts/n8n/export.sh`, `N8N_API_KEY`).
 - [x] Zaktualizować `job-contract.md` — Seatable jako źródło prawdy, opis aktualnej struktury tabel.
 - [x] Opisać istniejącą bazę Seatable (tabele `jobs` + `config`, kolumny, widoki) w `job-contract.md`.
 
@@ -272,7 +272,7 @@ Gdy będzie dostępna maszyna z działającymi workflow w n8n:
 1. **Wygeneruj klucz API n8n:** n8n → Settings → API → dodaj klucz; wpisz go do `.env` jako `N8N_API_KEY`.
 2. **Wyeksportuj workflow do repo:**
    ```bash
-   bash scripts/n8n-export.sh
+   bash scripts/n8n/export.sh
    ```
    Sprawdź czy pliki JSON trafiły do odpowiednich katalogów w `workflows/`.
 3. **Przejrzyj eksport:** upewnij się, że credential'e nie zawierają sekretów (skrypt powinien je wyciąć).

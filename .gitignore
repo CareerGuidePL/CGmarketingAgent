@@ -5,5 +5,6 @@
 .mcp.json
 .cursor/mcp.json
 
-# Claude Code local settings (memory, etc.)
-.claude/
+# Claude Code — lokalne pliki (settings.json, pamięć); w repo tylko szablon
+.claude/**
+!.claude/settings.json.example

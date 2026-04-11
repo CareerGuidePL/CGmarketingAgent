@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Export all n8n workflows to workflows/ directory.
+# Usage: bash scripts/n8n/export.sh
 # Requires N8N_API_KEY and N8N_API_URL in .env (or environment).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Load .env if present
 if [[ -f "$ROOT_DIR/.env" ]]; then
@@ -15,23 +16,6 @@ API_URL="${N8N_API_URL:-http://127.0.0.1:5679}"
 API_KEY="${N8N_API_KEY:?Set N8N_API_KEY in .env or environment}"
 
 WORKFLOWS_DIR="$ROOT_DIR/workflows"
-
-# Map n8n workflow name prefix -> subdirectory
-resolve_dir() {
-  local name="$1"
-  case "$name" in
-    cg-ingest-*|*ingest*)       echo "ingest" ;;
-    cg-orchestrator-*|*orchest*) echo "orchestrator" ;;
-    cg-hitl-*|*hitl*|*human*)   echo "hitl" ;;
-    cg-gen-*|*generat*)         echo "generate" ;;
-    cg-distribute-*|*distrib*)  echo "distribute" ;;
-    cg-store-*|*store*|*asset*) echo "store" ;;
-    cg-memory-*|*memory*)       echo "memory" ;;
-    cg-scheduler-*|*schedul*)   echo "scheduler" ;;
-    cg-analytics-*|*analyt*)    echo "analytics" ;;
-    *)                          echo "." ;;
-  esac
-}
 
 echo "Fetching workflow list from $API_URL ..."
 response=$(curl -sf -H "X-N8N-API-KEY: $API_KEY" "$API_URL/api/v1/workflows?limit=250")

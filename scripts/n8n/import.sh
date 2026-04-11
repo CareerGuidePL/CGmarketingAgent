@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Import a workflow JSON into n8n.
-# Usage: bash scripts/n8n-import.sh <path-to-workflow.json>
-# Requires N8N_API_KEY and N8N_API_URL in .env (or environment).
+# Usage: bash scripts/n8n/import.sh <path-to-workflow.json>
+# Requires N8N_API_KEY and N8N_API_URL in .env (or environment), plus curl and node (podsumowanie odpowiedzi).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $0 <workflow.json>"
@@ -35,13 +35,6 @@ response=$(curl -sf -X POST \
   -d @"$WORKFLOW_FILE" \
   "$API_URL/api/v1/workflows")
 
-echo "$response" | python3 -c "
-import json, sys
-wf = json.load(sys.stdin)
-print(f\"Imported: {wf.get('name', '?')} (id: {wf.get('id', '?')})\")" 2>/dev/null \
-|| echo "$response" | python -c "
-import json, sys
-wf = json.load(sys.stdin)
-print('Imported: %s (id: %s)' % (wf.get('name', '?'), wf.get('id', '?')))"
+echo "$response" | node -e "const w=JSON.parse(require('fs').readFileSync(0,'utf8')); console.log('Imported:', w.name || '?', '(id:', (w.id || '?') + ')');"
 
 echo "Done."
