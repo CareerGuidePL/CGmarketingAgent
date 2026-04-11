@@ -66,7 +66,7 @@ Baza `CG Marketing Agent` powinna miec:
 - `key` (Text), `value` (Text)
 - Wiersz startowy: `key = discord_last_message_id`, `value = 0`
 
-**Limity API (SeaTable Cloud):** typowy plan darmowy ma niski limit wywołań miesięcznie (np. **3000**). Stały polling dwóch workflowów szybko go zużywa. **Domyślnie w repo pod testy:** ingest **co 2 min**, orchestrator **co 5 min** — po zdjęciu blokady API nadaje się do sprawdzania przepływów; **na produkcję przy ciasnym limicie** ustaw znów rzadziej (np. **co 30 min** oba) albo wykup wyższy plan / **webhook** Discord. Ponawianie błędów na węzłach SeaTable jest celowo ograniczone (`maxTries: 2`), żeby przy429 nie mnożyć wywołań.
+**Limity API (SeaTable Cloud):** na Free bywa np. **3000** wywołań/mies. na zespół; **Plus** daje wyższą pulę (sprawdź [cennik](https://seatable.com/prices/)). **Pod testy** w repo bywa: ingest **co 2 min**, orchestrator **co 3 min**. **Po zakończeniu testów** ustaw **rzadszy polling** (orchestrator i ingest **co 5–10 min** lub więcej), potem wgraj workflow na n8n (`push-workflows.mjs`). Ponawianie błędów na węzłach SeaTable jest ograniczone (`maxTries: 2`), żeby przy429 nie mnożyć wywołań.
 
 ## 7. Workflow w n8n
 

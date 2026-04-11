@@ -38,3 +38,8 @@ Gdy użytkownik prosi o **wypchnięcie** / **wdrożenie** / **zsynchronizowanie*
 ## Aktualizacja `activeVersion` w eksportach
 
 - Eksporty n8n czasem zawierają **`activeVersion.nodes`** obok **`nodes`**. Przy edycji workflowów w repo utrzymuj **spójność** (oba lub tylko `nodes` — ale po `PUT` przez API serwer i tak korzysta z wgranej definicji). Jeśli użytkownik importuje z pliku, plik musi być spójny; przy pushu przez API decyduje payload ze skryptu (`stripForApi`).
+
+## Harmonogramy pod testy vs po testach (SeaTable / VPS)
+
+- **Na czas testów** użytkownik utrzymuje **`cg-orchestrator-main`** na **co 3 minuty** (Schedule Trigger) oraz ingest według bieżącej potrzeby (np. 2 min).
+- **Gdy testy się kończą** — **obowiązkowo** podnieś interwał orchestratora (i ewentualnie ingest) do **rzadszych wywołań: ok. 5–10 minut** (lub więcej przy ciasnym limicie API), potem `git push` + `node scripts/n8n/push-workflows.mjs`. Nie zostawiaj na stałe agresywnego pollingu po zakończeniu testów.
