@@ -8,6 +8,31 @@ Dokument zbiera ustalenia dotyczące automatyzacji marketingowej opartej na **n8
 
 ---
 
+## P0 — do wykonania w pierwszej kolejności (API SeaTable)
+
+**Status:** plan do **review i zatwierdzenia** przed wdrożeniem — pełna treść: [plans/event-driven-discord-seatable.md](plans/event-driven-discord-seatable.md) (sekcja *Review i zatwierdzenie* + checklisty).
+
+**Dlaczego teraz:** harmonogramy **ingest** i **orchestrator** generują stały strumień zapytań do SeaTable; w praktyce **wyczerpują limity API** (quota planu). Celem jest start pracy od **zdarzenia Discord** (zamiast crona „sprawdzaj kolejkę”) oraz przetwarzanie **jednego** `job_id` na wywołanie zamiast listowania widoku `to-process` przy każdym ticku — szczegóły i diagramy w planie.
+
+**Dla Adriana (AdiSzef):** jeśli sprawdzasz, **co jest do zrobienia** — **traktuj ten punkt jako priorytet #1** (limity SeaTable). Po akceptacji planu realizacja zgodnie z checklistą w pliku planu i `push-workflows` na VPS.
+
+---
+
+## Następny krok — dopracowanie CSS szablonów (slajdy / HCTI)
+
+**Status:** zaplanowane po domknięciu kierunku P0 (lub równolegle, jeśli ktoś ma capacity).
+
+**Kontekst:** obecny wygląd slajdów jest **w miarę ciekawy**, ale **nie do końca odpowiedni** (brand, czytelność, proporcje, spójność między kanałami). Trzeba iteracyjnie doprecyzować wizualnie i technicznie.
+
+**Pliki / miejsca:**
+
+- Szablon CSS w repo: [templates/hcti/career-guide-render.css](../templates/hcti/career-guide-render.css) (referencja / edycja lokalna).
+- **Uwaga wdrożeniowa:** render PNG w produkcji może używać **`baseCss` wbudowanego w workflow** [cg-gen-content.json](../workflows/generate/cg-gen-content.json) (węzeł budujący HTML) — po zmianach stylów **zaktualizować oba** albo scentralizować proces (skrypt patch / jedno źródło prawdy), potem `node scripts/n8n/push-workflows.mjs` dla `cg-gen-content`.
+
+**Kryteria „gotowe” (szkic):** akceptacja wizualna 1–2 układów testowych na LinkedIn / IG / FB, czytelność na mobile preview, zgodność z wytycznymi brandu.
+
+---
+
 ## Zakres i założenia
 
 - **Stack:** cała orkiestracja w **n8n** — orchestrator + mniejsze workflowy, przekazywanie danych przez ustandaryzowany JSON (np. `Execute Workflow` / webhooki).
@@ -94,6 +119,7 @@ Zamiast realizować wszystkie fazy naraz — **krótkie iteracje**, przyrost dzi
 | **I0** | Faza 0: lokalne n8n, konwencje, `.env`; opcjonalnie tunel | **done** — Docker, `.env.example`, onboarding, konwencje git, reguły IDE |
 | **I1** | Faza 1–2: credential'e, kontrakt `job`, jedno wejście (Discord) + Seatable/Drive | **done** — kontrakt `job`, rejestr credentiali, Seatable; w n8n i repo: `cg-ingest-discord` (+ później orchestrator/gen); API n8n + eksport workflowów do `workflows/` |
 | **I2** | Faza 3: ingest → orchestrator → HITL lub tania generacja tekstu | **done** — `cg-orchestrator-main` + `cg-gen-content` (Gemini), HITL przez Discord `sendAndWait`, widok `to-process` w Seatable (filtr na `ingested`/`revision_needed`), `concurrency: 1` w orchestratorze (brak równoległych runów); opcjonalnie twardszy rozdział **input vs feedback** (drugi kanał / reguły — patrz [decisions-three-variants.md § 4](decisions-three-variants.md)) |
+| **I2b** | **P0:** Event-driven Discord → SeaTable — redukcja zapytań API (trigger / Execute Workflow zamiast crona listującego `to-process`); patrz [plans/event-driven-discord-seatable.md](plans/event-driven-discord-seatable.md) | **planned — priorytet (limity API)** |
 | **I3** | Jeden kanał social; scheduler w wersji minimalnej (np. ręczny trigger) | planned |
 | **I4+** | Faza 4 (agent, HTCI, pamięć), pełny scheduler, kolejne kanały, Faza 6 | planned |
 
@@ -302,3 +328,5 @@ Gdy będzie dostępna maszyna z działającymi workflow w n8n:
 | 1.6 | Ingest Discord: pomijanie reply (`message_reference`), spójne przesuwanie `discord_last_message_id`; dokumentacja §4 / job-contract zaktualizowane |
 | 1.7 | HITL: `freeText` + parsowanie `data.text` w orchestratorze; SeaTable `columnsUi` w eksporcie; opcjonalny ngrok w Docker Compose (`tunnel`, :4041); roadmap § stan / I2 |
 | 1.8 | Wdrożenie głównej instancji na **VPS** (`cg-agent.n8n.crait.pro`), `hcti-render` w compose; dokumentacja: dev lokalnie vs prod VPS; Faza 8 jako utwardzenie operacyjne |
+| 1.9 | **P0** w roadmapie: plan event-driven Discord → SeaTable ([plans/event-driven-discord-seatable.md](plans/event-driven-discord-seatable.md)), review przed wdrożeniem; notatka priorytetu dla zespołu (limity SeaTable API) |
+| 1.10 | Kolejny krok: dopracowanie CSS szablonów slajdów (HCTI) — sekcja w roadmapie, powiązanie `career-guide-render.css` + `baseCss` w `cg-gen-content` |
